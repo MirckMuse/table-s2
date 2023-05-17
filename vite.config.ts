@@ -4,8 +4,8 @@ export default defineConfig({
   build: {
     lib: {
       entry: './lib/main.ts',
-      name: 'Counter',
-      fileName: 'counter'
+      name: 'S2Table',
+      fileName: 'S2Table'
     }
   }
 })
