@@ -3,7 +3,10 @@
 	"private": true,
 	"version": "0.0.0",
 	"type": "module",
-	"files": ["dist", "index.d.ts"],
+	"files": [
+		"dist",
+		"index.d.ts"
+	],
 	"main": "./dist/S2Table.umd.cjs",
 	"module": "./dist/S2Table.js",
 	"types": "./index.d.ts",
@@ -13,7 +16,7 @@
 		"require": "./dist/S2Table.umd.cjs"
 	},
 	"scripts": {
-		"dev": "vite",
+		"dev": "vite --host",
 		"build": "tsc && vite build",
 		"prepare": "husky install"
 	},
@@ -31,6 +34,11 @@
 		}
 	},
 	"lint-staged": {
-		"src/**/*.{js,ts}": ["echo 'from lint-stage'"]
+		"lib/**/*.{js,ts}": [
+			"echo 'from lint-stage'"
+		]
+	},
+	"dependencies": {
+		"@antv/s2": "2.0.0-next.7"
 	}
 }
