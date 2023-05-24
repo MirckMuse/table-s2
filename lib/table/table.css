@@ -1,0 +1,11 @@
+:host,
+#s2-table-container,
+.s2-table {
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+}
+
+#s2-table-container {
+  position: relative;
+}
