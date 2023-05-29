@@ -18,5 +18,10 @@
   position: absolute;
   left: 0;
   top: 0;
-  background-color: red;
+  background-color: rgba(65, 71, 94, .9);
+  color: #fff;
+  font-weight: 700;
+  padding: 4px 8px;
+  font-size: 13px;
+  border-radius: 2px;
 }

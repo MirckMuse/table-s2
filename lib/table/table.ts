@@ -1,28 +1,33 @@
+import { GEvent, Meta, S2CellType, S2DataConfig, S2Event, S2Options, TableSheet, ViewMeta } from '@antv/s2';
+import { throttle } from 'lodash-es';
 import style from './table.css?inline';
-import { GEvent, Meta, S2CellType, S2Event, S2Options, TableSheet, ViewMeta } from '@antv/s2';
 import { DefaultTheme } from './theme';
 import { Tooltip_Strategy } from './tooltip';
-import { ISize, ITableColumn, TableData } from './typing';
+import { ITableColumn, TableData } from './typing';
+import { getFrozenCount } from './utils'
 
 /**
  * s2 table的template
  */
 const tableTemplate = `
 <template id="root">
-    <style>
-    ${style}
-    </style>
+    <style>${style}</style>
 
     <div id="s2-table-container">    
       <div class="s2-table"></div>
       <div class="s2-table__loading"></div>
-      <div class="s2-table__tooltip"></div>
+      <div class="s2-table__tooltip" style="display: none"></div>
     </div>
 </template>
 `;
 
 export class S2Table extends HTMLElement {
   rootElement: HTMLDivElement | null = null;
+
+  /**
+   * 是否携带边框
+   */
+  bordered = false;
 
   constructor() {
     super();
@@ -44,7 +49,9 @@ export class S2Table extends HTMLElement {
   }
 
   init() {
+    // 初始化元素
     this.initElement()
+    // 初始化s2的容器
     this.initContainer()
   }
 
@@ -64,28 +71,25 @@ export class S2Table extends HTMLElement {
 
   tableContainer: TableSheet | null = null;
 
-  size: ISize = { width: 0, height: 0 }
-
   // 初始化table容器
   initContainer() {
     if (!this.shadowRoot || !this.s2TableElement) return
+    if (!this.s2Columns.length) return
 
     const { clientHeight = 400, clientWidth = 600 } = this.rootElement || {}
 
-    const s2Option: S2Options = { width: clientWidth, height: clientHeight }
+    const { frozenColCount, frozenTrailingColCount } = this.frozenCount
 
-    if (!this.s2Columns.length) return
+    const s2Option: S2Options = { width: clientWidth, height: clientHeight, frozenColCount, frozenTrailingColCount }
+
+    const s2DataOption: S2DataConfig = {
+      data: this.dataSource || [],
+      fields: { columns: this.s2Columns },
+      meta: this.s2Meta
+    }
 
     // 渲染s2的表格
-    this.tableContainer = this.tableContainer || new TableSheet(
-      this.s2TableElement,
-      {
-        data: this.dataSource || [],
-        fields: { columns: this.s2Columns },
-        meta: this.s2Meta
-      },
-      s2Option
-    )
+    this.tableContainer = this.tableContainer || new TableSheet(this.s2TableElement, s2DataOption, s2Option)
     this.tableContainer.setThemeCfg(DefaultTheme)
     this.tableContainer.render()
     this.initEvent()
@@ -97,10 +101,11 @@ export class S2Table extends HTMLElement {
 
     // TODO: 目前的tooltip没有延迟效果，需要修正
     let previewCell: S2CellType<ViewMeta> | null | undefined = null
-    // tooltip事件
-    this.tableContainer.on(S2Event.GLOBAL_HOVER, (event: GEvent) => {
+    // 每24毫秒执行一次
+    const throttleTooltip = throttle((event: GEvent) => {
       const cell = this.tableContainer?.getCell(event.target)
       if (cell !== previewCell && this.s2TableTooltip) {
+        this.s2TableTooltip.style.display = 'none'
         this.s2TableTooltip.innerText = ''
       }
 
@@ -113,11 +118,18 @@ export class S2Table extends HTMLElement {
 
       const tooltipText = strategy(cell)
       if (tooltipText) {
-        this.s2TableTooltip.style.top = `${event.clientY}px`
-        this.s2TableTooltip.style.left = `${event.clientX}px`
+        const meta = cell.getMeta()
+        const assignStyle = {
+          display: 'block',
+          left: `${meta.x}px`,
+          top: `${event.y + 20}px`
+        }
+        Object.assign(this.s2TableTooltip.style, assignStyle)
         this.s2TableTooltip.innerText = tooltipText
       }
-    })
+    }, 24)
+    // tooltip事件
+    this.tableContainer.on(S2Event.GLOBAL_HOVER, throttleTooltip)
   }
 
   // 列配置信息
@@ -154,4 +166,9 @@ export class S2Table extends HTMLElement {
       }
     })
   }
+
+  get frozenCount() {
+    return getFrozenCount(this.columns)
+  }
 }
+
