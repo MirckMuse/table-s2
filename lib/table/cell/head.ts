@@ -19,22 +19,16 @@ export default class HeadCell extends BaseCell {
   constructor(table: S2Table, meta: ICellMeta, column: ITableColumn) {
     super(table, meta);
     this._column = column
-    this.calcCellPosition()
     this.initText();
     this.initBackground()
     this.initCell();
     this.render();
   }
 
-  // 计算单元格的位置信息
-  calcCellPosition() {
-  }
-
   getTextPostion(): IPosition {
     const position = this.meta?.position
     const { theme } = this.table;
     const { headCell = DefaultTheme.headCell } = theme
-
     return {
       x: position?.x ?? 0,
       y: (position?.y ?? 0) + (headCell?.fontSize ?? 0),

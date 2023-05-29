@@ -1,6 +1,7 @@
 export * from './theme'
+import { RawData } from '@antv/s2'
 
-export type TableData = Record<string, unknown>;
+export type TableData = Record<string, unknown> & RawData;
 
 /**
  * 列配置信息

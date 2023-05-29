@@ -9,3 +9,14 @@
 #s2-table-container {
   position: relative;
 }
+
+.s2-table-container {
+  position: relative;
+}
+
+.s2-table__tooltip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  background-color: red;
+}

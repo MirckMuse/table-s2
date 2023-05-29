@@ -9,7 +9,7 @@ function initTable() {
   if (!s2) return
 
   const keys = Array(10).fill(null).map((_, index) => `dept${index}`);
-  const columns = keys.map(key => ({ title: key, dataIndex: key }))
+  const columns = keys.map(key => ({ title: `${key}CN`, dataIndex: key }))
   const dataSource = Array(10).fill(null).map((_, index) => {
     return keys.reduce<any>((data, key) => {
       data[key] = `${key}-${index}`
@@ -23,7 +23,7 @@ function initTable() {
 
 if (App) {
   App.innerHTML = `
-  <s2-table id="s2" style="margin: 10px"></s2-table>
+  <s2-table id="s2"></s2-table>
   `;
 
   initTable()
