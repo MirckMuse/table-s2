@@ -1,25 +1,10 @@
-import { GEvent, Meta, S2CellType, S2DataConfig, S2Event, S2Options, TableSheet, ViewMeta } from '@antv/s2';
+import { GEvent, Meta, S2CellType, S2DataConfig, S2Event, S2Options, TableSheet, ViewMeta, SpreadSheet } from '@antv/s2';
 import { throttle } from 'lodash-es';
 import style from './table.css?inline';
-import { DefaultTheme } from './theme';
+// import { DefaultTheme } from './theme';
 import { Tooltip_Strategy } from './tooltip';
 import { ITableColumn, TableData } from './typing';
-import { getFrozenCount } from './utils'
-
-/**
- * s2 table的template
- */
-const tableTemplate = `
-<template id="root">
-    <style>${style}</style>
-
-    <div id="s2-table-container">    
-      <div class="s2-table"></div>
-      <div class="s2-table__loading"></div>
-      <div class="s2-table__tooltip" style="display: none"></div>
-    </div>
-</template>
-`;
+import { getFrozenCount } from './utils';
 
 export class S2Table extends HTMLElement {
   rootElement: HTMLDivElement | null = null;
@@ -31,19 +16,6 @@ export class S2Table extends HTMLElement {
 
   constructor() {
     super();
-
-    this.attachShadow({ mode: "open" })
-    if (!this.shadowRoot) return
-
-    this.shadowRoot.innerHTML = tableTemplate;
-
-    const template = this.shadowRoot.getElementById('root') as HTMLTemplateElement
-
-    if (!template) return
-
-    const templateContent = template.content;
-
-    this.shadowRoot.appendChild(templateContent.cloneNode(true));
 
     this.init();
   }
@@ -58,29 +30,59 @@ export class S2Table extends HTMLElement {
   // table 容器
   s2TableElement: HTMLDivElement | null = null;
   // table 的tooltip
+  s2TableLoading: HTMLDivElement | null = null;
+  // table 的tooltip
   s2TableTooltip: HTMLDivElement | null = null;
+
+  styleElment: HTMLStyleElement | null = null;
 
   // 初始化元素
   initElement() {
-    if (!this.shadowRoot) return
+    // 创建样式元素
+    this.styleElment = document.createElement('style')
+    this.styleElment.innerHTML = style
+    this.appendChild(this.styleElment);
 
-    this.rootElement = this.shadowRoot.querySelector('#s2-table-container') as HTMLDivElement
-    this.s2TableElement = this.shadowRoot.querySelector('.s2-table') as HTMLDivElement
-    this.s2TableTooltip = this.shadowRoot.querySelector('.s2-table__tooltip') as HTMLDivElement
+    // 创建s2容器元素
+    this.s2TableElement = document.createElement('div')
+    this.s2TableElement.classList.add('s2-table')
+
+    // 创建loading元素
+    this.s2TableLoading = document.createElement('div')
+    this.s2TableLoading.classList.add('s2-table__loading')
+
+    // 创建tooltip元素
+    this.s2TableTooltip = document.createElement('div')
+    this.s2TableTooltip.classList.add('s2-table__tooltip')
+    this.s2TableTooltip.style.display = 'none'
+
+    // 创建根元素
+    this.rootElement = document.createElement('div')
+    this.rootElement.id = 's2-table-container'
+
+    // 将元素插入到子节点
+    this.rootElement.appendChild(this.s2TableElement)
+    this.rootElement.appendChild(this.s2TableLoading)
+    this.rootElement.appendChild(this.s2TableTooltip)
+    this.appendChild(this.rootElement)
   }
 
-  tableContainer: TableSheet | null = null;
+  tableContainer: SpreadSheet | null = null;
 
   // 初始化table容器
   initContainer() {
-    if (!this.shadowRoot || !this.s2TableElement) return
+    if (!this.s2TableElement) return
+
     if (!this.s2Columns.length) return
 
     const { clientHeight = 400, clientWidth = 600 } = this.rootElement || {}
 
-    const { frozenColCount, frozenTrailingColCount } = this.frozenCount
+    // const { frozenColCount, frozenTrailingColCount } = this.frozenCount
 
-    const s2Option: S2Options = { width: clientWidth, height: clientHeight, frozenColCount, frozenTrailingColCount }
+    const s2Option: S2Options = {
+      width: clientWidth,
+      height: clientHeight,
+    }
 
     const s2DataOption: S2DataConfig = {
       data: this.dataSource || [],
@@ -90,7 +92,7 @@ export class S2Table extends HTMLElement {
 
     // 渲染s2的表格
     this.tableContainer = this.tableContainer || new TableSheet(this.s2TableElement, s2DataOption, s2Option)
-    this.tableContainer.setThemeCfg(DefaultTheme)
+    // this.tableContainer.setThemeCfg(DefaultTheme)
     this.tableContainer.render()
     this.initEvent()
   }
@@ -119,6 +121,7 @@ export class S2Table extends HTMLElement {
       const tooltipText = strategy(cell)
       if (tooltipText) {
         const meta = cell.getMeta()
+
         const assignStyle = {
           display: 'block',
           left: `${meta.x}px`,
@@ -128,6 +131,7 @@ export class S2Table extends HTMLElement {
         this.s2TableTooltip.innerText = tooltipText
       }
     }, 24)
+
     // tooltip事件
     this.tableContainer.on(S2Event.GLOBAL_HOVER, throttleTooltip)
   }

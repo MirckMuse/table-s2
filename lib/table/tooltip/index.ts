@@ -5,9 +5,9 @@ export const Tooltip_Strategy: Record<string, Function> = {
   // 行头单元格的tooltip策略
   [CellTypes.COL_CELL](cell: S2CellType<ViewMeta>) {
     const meta = cell.getMeta()
-    if (cell.getActualText() === meta.label) return ''
+    if (cell.getActualText() === meta.value) return ''
 
-    return meta.label
+    return meta.value
   },
   // 数值单元格的tooltip策略
   [CellTypes.DATA_CELL](cell: S2CellType<ViewMeta>) {

@@ -1,7 +1,7 @@
 export * from './theme'
-import { RowData } from '@antv/s2'
+import { RawData } from '@antv/s2'
 
-export type TableData = Record<string, unknown> & RowData;
+export type TableData = RawData & Record<string, unknown>;
 
 // 列的冻结配置
 export type ITableColumnFixed = boolean | 'left' | 'right';

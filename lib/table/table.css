@@ -25,3 +25,11 @@
   font-size: 13px;
   border-radius: 2px;
 }
+
+s2-table {
+  display: inline-block;
+  width: 100%;
+  height: calc(100% - 6px);
+  margin: 0;
+  padding: 0;
+}
