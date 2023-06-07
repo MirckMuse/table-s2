@@ -5,6 +5,8 @@ import style from './table.css?inline';
 import { Tooltip_Strategy } from './tooltip';
 import { ITableColumn, TableData } from './typing';
 import { getFrozenCount } from './utils';
+import TableDataCell from './cell/DataCell'
+import TableColCell from './cell/ColCell'
 
 export class S2Table extends HTMLElement {
   rootElement: HTMLDivElement | null = null;
@@ -29,11 +31,11 @@ export class S2Table extends HTMLElement {
 
   // table 容器
   s2TableElement: HTMLDivElement | null = null;
-  // table 的tooltip
+  // loading元素
   s2TableLoading: HTMLDivElement | null = null;
-  // table 的tooltip
+  // tooltip的元素
   s2TableTooltip: HTMLDivElement | null = null;
-
+  // 样式元素
   styleElment: HTMLStyleElement | null = null;
 
   // 初始化元素
@@ -77,11 +79,21 @@ export class S2Table extends HTMLElement {
 
     const { clientHeight = 400, clientWidth = 600 } = this.rootElement || {}
 
-    // const { frozenColCount, frozenTrailingColCount } = this.frozenCount
+    const { frozenColCount, frozenTrailingColCount } = this.frozenCount
 
     const s2Option: S2Options = {
       width: clientWidth,
       height: clientHeight,
+      frozen: {
+        colCount: frozenColCount,
+        trailingColCount: frozenTrailingColCount
+      },
+      dataCell: (meta) => {
+        return new TableDataCell(meta, meta?.spreadsheet, this.columnMeta)
+      },
+      colCell: (node, s2, headConfig) => {
+        return new TableColCell(node, s2, { ...headConfig, columnMeta: this.columnMeta });
+      },
     }
 
     const s2DataOption: S2DataConfig = {
@@ -166,13 +178,22 @@ export class S2Table extends HTMLElement {
     return this.columns.map<Meta>(column => {
       return {
         field: column.dataIndex,
-        name: column.title
+        name: column.title,
+        align: column.align
       }
     })
   }
 
   get frozenCount() {
     return getFrozenCount(this.columns)
+  }
+
+  get columnMeta() {
+    // TODO: 需要遍历每一个单元格
+    return this.columns.reduce<Record<string, ITableColumn>>((map, column) => {
+      map[column.dataIndex] = column
+      return map
+    }, {})
   }
 }
 

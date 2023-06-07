@@ -16,7 +16,7 @@ function initTable() {
     } else if (index > 7) {
       fixed = 'right'
     }
-    return { title: `${key}CN`, dataIndex: key, fixed }
+    return { title: `${key}CN`, dataIndex: key, fixed, align: 'left' }
   })
   const dataSource = Array(10).fill(null).map((_, index) => {
     return keys.reduce<any>((data, key) => {

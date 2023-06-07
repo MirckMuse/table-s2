@@ -3,6 +3,8 @@ import { RawData } from '@antv/s2'
 
 export type TableData = RawData & Record<string, unknown>;
 
+export type Align = 'left' | 'center' | 'right';
+
 // 列的冻结配置
 export type ITableColumnFixed = boolean | 'left' | 'right';
 
@@ -15,6 +17,8 @@ export interface ITableColumn {
   dataIndex: string;
 
   fixed?: ITableColumnFixed;
+
+  align?: Align;
 }
 
 export interface ISize {
