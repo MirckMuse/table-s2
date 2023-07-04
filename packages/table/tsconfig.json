@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "paths": {}
+  },
+  "exclude": [
+    "node_modules",
+    "esm",
+    "lib",
+    "dist",
+    "temp"
+  ]
+}

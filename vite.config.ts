@@ -7,5 +7,8 @@ export default defineConfig({
       name: 'S2Table',
       fileName: 'S2Table'
     }
+  },
+  server: {
+    port: 3001
   }
 })

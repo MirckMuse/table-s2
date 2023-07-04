@@ -1,0 +1,48 @@
+{
+  "name": "@stable/table",
+  "version": "0.0.1",
+  "description": "",
+  "main": "lib/index.js",
+  "unpkg": "dist/index.min.js",
+  "module": "esm/index.js",
+  "types": "esm/index.d.ts",
+  "src": "src/index.ts",
+  "scripts": {
+    "clean": "rimraf lib esm dist temp",
+    "build": "pnpm clean && rollup -c rollup.config.mjs && pnpm build:dts",
+    "build:dts": "run-s dts:*",
+    "dts:build": "tsc -p tsconfig.declaration.json",
+    "dts:extract": "cross-env LIB=table node ../../build/dts.js"
+  },
+  "files": [
+    "esm",
+    "lib",
+    "dist",
+    "README.md"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@antv/event-emitter": "^0.1.3",
+    "@antv/g": "^5.18.2",
+    "@antv/g-canvas": "1.11.1",
+    "lodash-es": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/lodash-es": "^4.17.7"
+  },
+  "bundlesize": [
+    {
+      "path": "./dist/index.min.js",
+      "maxSize": "200 kB"
+    },
+    {
+      "path": "./dist/style.min.css",
+      "maxSize": "5 kB"
+    }
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}
