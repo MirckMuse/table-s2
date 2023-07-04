@@ -1,0 +1,1 @@
+export const MIN_DEVICE_PIXEL_RATIO = 1;
