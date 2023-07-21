@@ -5,26 +5,41 @@ import EventEmitter from '@antv/event-emitter'
 import { Config, DataConfig, MountElement } from '../common/interface';
 import { Canvas } from '@antv/g'
 import { Renderer } from '@antv/g-canvas';
-import { MIN_DEVICE_PIXEL_RATIO, TableEvent } from '../common/constant';
+import { MIN_DEVICE_PIXEL_RATIO, TableEvent, Default_Config } from '../common/constant';
 import { Interaction } from '../interaction';
 import { Store } from '../store'
-import { Adaptive, HdAdapter } from '../ui';
+import { Adaptive, BaseTheme, HdAdapter } from '../ui';
+import { merge } from 'lodash-es'
 
 /**
  * 基础的表格
  */
 export abstract class Sheet extends EventEmitter {
+  get width() {
+    return this.canvas.getConfig().width
+  }
+
+  get height() {
+    return this.canvas.getConfig().height
+  }
 
   protected dataConfig: DataConfig;
 
-  public getDataConfig() {
+  getDataConfig() {
     return this.dataConfig
   }
 
-  protected config: Config;
+  config: Config;
 
   getConfig() {
     return this.config
+  }
+  updateConfig(config: Partial<Config>, reset?: boolean) {
+    if (reset) {
+      this.config = merge(Default_Config, config)
+    } else {
+      this.config = merge(this.config, config)
+    }
   }
 
   protected dataSet: DataSet;
@@ -99,6 +114,8 @@ export abstract class Sheet extends EventEmitter {
     this.interaction = override ? override(this) : new Interaction(this)
   }
 
+  theme: BaseTheme;
+
   // 初始化主题
   protected initTheme() {
     // TODO:
@@ -128,8 +145,14 @@ export abstract class Sheet extends EventEmitter {
       : new Adaptive(this)
   }
 
+  private destroyed = false;
+
   // 渲染表格
-  render() {
+  async render() {
+    if (this.destroyed) return
+
+    await this.canvas.ready
+
     if (!this.getCanvasElement()) return
 
     this.emit(TableEvent.LAYOUT_BEFORE_RENDER);
@@ -137,9 +160,19 @@ export abstract class Sheet extends EventEmitter {
     // TODO:
 
     this.initFacet()
+
+    // TODO:
+
+    this.emit(TableEvent.LAYOUT_AFTER_RENDER)
   }
 
   destroy() {
+    if (this.destroyed) {
+      return;
+    }
+
+    this.destroyed = true;
+
     this.store.clear()
     this.facet?.destroy();
     this.hdAdapter?.destroy();
@@ -157,5 +190,5 @@ export abstract class Sheet extends EventEmitter {
   }
 
   facet: Facet;
-  protected abstract initFacet(): Facet;
+  protected abstract initFacet(): void;
 }

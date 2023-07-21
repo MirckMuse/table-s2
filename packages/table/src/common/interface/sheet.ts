@@ -1,5 +1,7 @@
 import type { InteractionConfig } from "./interaction";
 import type { AdaptiveConfig, HdAdapterConfig } from "./ui";
+import type { Sheet } from "../../sheet";
+import type { Facet } from "../../facet";
 
 export type RowData = Record<string, unknown>;
 
@@ -35,6 +37,17 @@ export interface DataConfig {
   filters?: Filter[];
 }
 
+export interface Pagination {
+  /** 每页数量 */
+  pageSize: number;
+
+  /** 当前页 (从 1 开始) */
+  current: number;
+
+  /** 数据总条数 */
+  total?: number;
+}
+
 /**
  * 通用配置
  */
@@ -50,6 +63,10 @@ export interface Config {
 
   // 自适应配置。
   adaptive?: boolean | AdaptiveConfig;
+
+  facet?: (sheet: Sheet) => Facet;
+
+  pagination?: Pagination;
 
   [key: string]: unknown;
 }

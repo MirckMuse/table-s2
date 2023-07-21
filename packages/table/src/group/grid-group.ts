@@ -13,5 +13,4 @@ export class GridGroup extends Group {
     super(rest)
     this.sheet = sheet
   }
-
 }

@@ -6,8 +6,11 @@ import { TableFacet } from '../facet'
 export class TableSheet extends Sheet {
   protected bindEvents(): void {
   }
-  protected initFacet(): TableFacet {
-    return new TableFacet(this)
+
+  protected initFacet() {
+    this.facet?.destroy()
+    this.facet = this.config.facet?.(this) ?? new TableFacet(this)
+    this.facet.render()
   }
 
   public getDataSet(): DataSet {

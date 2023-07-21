@@ -19,7 +19,5 @@ if (App) {
 
   const tableElement = document.querySelector('#s2')
 
-  console.log(tableElement)
-
   tableElement && initTable(tableElement as HTMLElement);
 }
