@@ -51,6 +51,43 @@ export interface ScrollbarTheme {
   hoverThumbColor?: string;
 }
 
+export interface BackgroundTheme {
+  opacity?: number;
+
+  color?: string;
+}
+
+export interface CellTheme {
+  verticalBorderWidth?: number;
+
+  verticalBorderColorOpacity?: number;
+
+  verticalBorderColor?: string;
+
+  horizontalBorderWidth?: number;
+
+  horizontalBorderColorOpacity?: number;
+
+  horizontalBorderColor?: string;
+}
+
+// 文本内容的水平对齐方式, 默认 left
+export type TextAlign = 'left' | 'center' | 'right';
+
+// 绘制文本时的基线, 对应垂直方向对齐方式 默认 bottom
+export type VerticalAlign = 'top' | 'middle' | 'bottom';
+
+export interface TextAlignStyle {
+  textAlign: TextAlign;
+
+  verticalAlign: VerticalAlign;
+
+  // 文本内容的水平对齐方式, 默认 left
+}
+
+export interface DataCellTheme extends DefaultCellTheme {
+}
+
 type CellThemes = {
   [K in CellType]?: DefaultCellTheme
 }
@@ -133,13 +170,7 @@ export interface IconTheme {
   margin?: Margin;
 }
 
-// 文本内容的水平对齐方式, 默认 left
-export type TextAlign = 'left' | 'center' | 'right';
-
-// 绘制文本时的基线, 对应垂直方向对齐方式 默认 bottom
-export type TextBaseline = 'top' | 'middle' | 'bottom';
-
-export interface TextTheme {
+export interface TextTheme extends TextAlignStyle {
   /* 字体 */
   fontFamily?: string;
 
@@ -157,8 +188,4 @@ export interface TextTheme {
 
   /* 字体透明度 */
   opacity?: number;
-
-  textAlign?: TextAlign;
-
-  textBaseline?: TextBaseline;
 }

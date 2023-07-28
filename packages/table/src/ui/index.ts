@@ -1,5 +1,7 @@
-export * from './HdAdapter'
+export * from './HdAdapter';
 
-export * from './Adaptive'
+export * from './Adaptive';
 
-export * from './theme'
+export * from './theme';
+
+export * from './TextView';

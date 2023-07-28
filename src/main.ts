@@ -5,8 +5,12 @@ const App = document.querySelector<HTMLDivElement>("#app");
 
 function initTable(dom: HTMLElement) {
   const sheet = new TableSheet(dom, {
-    columns: [],
-    dataSource: []
+    columns: [{ dataIndex: 'a', title: '12' }],
+    dataSource: Array(10).fill(null).map((_, index) => {
+      return {
+        a: 'a' + index
+      }
+    })
   }, {})
 
   sheet.render()

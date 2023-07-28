@@ -1,4 +1,5 @@
-import type { OverscrollBehavior } from "../common/interface";
+import { DefaultInteractionState, INTERACTION_STATE_KEY } from "../common/constant";
+import type { InteractionState, OverscrollBehavior } from "../common/interface";
 import type { Sheet } from "../sheet";
 import { Tooltip } from "./tooltip";
 
@@ -45,4 +46,25 @@ export class Interaction {
   // ========== Tooltip ============
 
   tooltip: Tooltip;
+
+  getState(): InteractionState {
+    return this.sheet.store.get(INTERACTION_STATE_KEY) || DefaultInteractionState;
+  }
+
+  setState(interactionState: InteractionState) {
+    this.clearState();
+    this.sheet.store.set(INTERACTION_STATE_KEY, interactionState)
+  }
+
+  clearState() {
+    // TODO: 清理状态
+  }
+
+  /**
+   * ========== 暴露出的公共方法 ========
+   */
+
+  getCurrentStateName() {
+    return this.getState().name
+  }
 }

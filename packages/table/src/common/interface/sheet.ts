@@ -5,7 +5,33 @@ import type { Facet } from "../../facet";
 
 export type RowData = Record<string, unknown>;
 
+export type ColumnCustomCellOption = {
+  record: RowData,
+
+  index: number,
+
+  column: Column
+};
+
+export type ColumnCustomRenderOption = ColumnCustomCellOption & {
+  text: string | number,
+}
+
+// 列自定义渲染函数
+export type ColumnCustomRender = (option: ColumnCustomRenderOption) => string | number;
+
 export type MountElement = HTMLElement;
+
+// 列自定义绑定事件
+export type ColumnCustomCellResult = {
+  style?: CSSStyleDeclaration;
+
+  onClick?: () => void;
+
+  // TODO:
+}
+
+export type ColumnCustomCell = (option: ColumnCustomCellOption) => ColumnCustomCellResult;
 
 export interface Column {
   key?: string;
@@ -13,6 +39,10 @@ export interface Column {
   dataIndex: string;
 
   title: string;
+
+  customRender?: ColumnCustomRender;
+
+  customCell?: ColumnCustomCell;
 }
 
 export type Sorter = any;
@@ -48,6 +78,23 @@ export interface Pagination {
   total?: number;
 }
 
+// TODO:
+export interface Column {
+  key?: string;
+
+  dataIndex: string;
+}
+
+export interface TransformCellTextOptions {
+  column: Column;
+
+  record: unknown;
+
+  rowIndex: number;
+}
+
+export type TransformCellText = string | number | ((options: TransformCellTextOptions) => string | number);
+
 /**
  * 通用配置
  */
@@ -67,6 +114,8 @@ export interface Config {
   facet?: (sheet: Sheet) => Facet;
 
   pagination?: Pagination;
+
+  transformCellText?: TransformCellText;
 
   [key: string]: unknown;
 }

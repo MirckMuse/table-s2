@@ -3,12 +3,6 @@ import type { Sheet } from "../../sheet";
 
 export type OverscrollBehavior = 'auto' | 'none' | 'contain' | null;
 
-export enum CellType {
-  DATA_CELL = 'dataCell',
-  SERIES_NUMBER_CELL = 'seriesNumberCell',
-  MERGED_CELL = 'mergedCell',
-}
-
 export interface ScrollSpeedRatio {
   horizontal?: number;
 
@@ -48,4 +42,35 @@ export interface InteractionConfig {
   scrollSpeedRatio?: number | ScrollSpeedRatio;
 
   scrollbarPosition?: ScrollbarPositionType;
+}
+
+export enum InteractionStateName {
+  ALL_SELECTED = 'all_selected',
+  SELECTED = 'selected',
+  UNSELECTED = 'unselected',
+  HOVER = 'hover',
+  HOVER_FOCUS = 'hover_focus',
+  HIGHLIGHT = 'highlight',
+  SEARCH_RESULT = 'search_result',
+  PREPARE_SELECT = 'prepare_select',
+}
+
+export interface CellMeta {
+  id: string;
+
+  dataIndex: string;
+
+  rowIndex: number;
+
+  [key: string]: unknown;
+}
+
+export type CellsMeta = Map<CellType, CellMeta[]>
+
+export interface InteractionState {
+  name?: InteractionStateName
+
+  cellsMeta?: CellsMeta;
+
+  force?: boolean;
 }

@@ -4,6 +4,10 @@ import { isMobile } from '../../shared';
 import { BaseEvent } from "../../event/base";
 import { HorizontalScrollbar, ScrollType, Scrollbar, VerticalScrollbar } from './scrollbar';
 
+export function getAdjustedScrollOffset(scroll: number, content: number, container: number) {
+  return Math.max(0, Math.min(content - container, scroll))
+}
+
 export class ScrollEvent extends BaseEvent {
 
   horizontalScrollbar: Scrollbar;
@@ -130,6 +134,7 @@ export class ScrollEvent extends BaseEvent {
   public unbindEvents(): void {
     const canvas = this.sheet.getCanvasElement()
     canvas?.removeEventListener('wheel', this.onWheel)
+    // this.mobileWheel?.destroy();
     this.scrollFrameId && cancelAnimationFrame(this.scrollFrameId)
   }
 
@@ -390,11 +395,8 @@ export class ScrollEvent extends BaseEvent {
   adjustScrollOffset() {
     this.setScrollOffset(this.getAdjustedScrollOffset(this.getScrollOffset()))
   }
-  getAdjustedScrollOffset({ scrollX, scrollY }: ScrollOffset): ScrollOffset {
-    function getAdjustedScrollOffset(scroll: number, content: number, container: number) {
-      return Math.max(0, Math.min(content - container, scroll))
-    }
 
+  getAdjustedScrollOffset({ scrollX, scrollY }: ScrollOffset): ScrollOffset {
     const { width, height } = this.sheet.facet.panelBBox
 
     const rendererWidth = 0;
@@ -404,5 +406,20 @@ export class ScrollEvent extends BaseEvent {
       scrollX: getAdjustedScrollOffset(scrollX ?? 0, rendererWidth, width),
       scrollY: getAdjustedScrollOffset(scrollY ?? 0, rendererHeight, height),
     }
+  }
+
+  /**
+   * 重置方法
+   */
+  resetScrollX() {
+    this.setScrollOffset({ scrollX: 0 })
+  }
+
+  resetScrollY() {
+    this.setScrollOffset({ scrollY })
+  }
+
+  resetScrollOffset() {
+    this.setScrollOffset({ scrollX: 0, scrollY: 0 })
   }
 }

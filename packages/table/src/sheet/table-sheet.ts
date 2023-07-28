@@ -4,7 +4,7 @@ import { TableDataSet } from '../data-set'
 import { TableFacet } from '../facet'
 
 export class TableSheet extends Sheet {
-  protected bindEvents(): void {
+  protected bindEvents() {
   }
 
   protected initFacet() {

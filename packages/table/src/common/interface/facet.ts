@@ -11,3 +11,22 @@ export interface LayoutInfo {
 
   seriesNumberNodes?: Node[];
 }
+
+export type Indexes = [number, number, number, number];
+
+export type PanelIndexes = {
+  center: Indexes;
+
+  frozenCol?: Indexes;
+
+  frozenTrailingCol?: Indexes;
+};
+
+export type RowIndex = number;
+
+export type DataIndex = string;
+
+export interface Diff {
+  add: [RowIndex, DataIndex][];
+  remove: [RowIndex, DataIndex][];
+}

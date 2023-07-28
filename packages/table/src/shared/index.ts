@@ -31,3 +31,5 @@ export function isIPhoneX() {
 export function isWindows() {
   return /windows/i.test(navigator.userAgent);
 }
+
+export * from './render';

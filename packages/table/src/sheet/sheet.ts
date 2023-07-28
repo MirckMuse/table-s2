@@ -9,7 +9,9 @@ import { MIN_DEVICE_PIXEL_RATIO, TableEvent, Default_Config } from '../common/co
 import { Interaction } from '../interaction';
 import { Store } from '../store'
 import { Adaptive, BaseTheme, HdAdapter } from '../ui';
-import { merge } from 'lodash-es'
+import { memoize, merge } from 'lodash-es'
+
+export type MeasureText = string | number;
 
 /**
  * 基础的表格
@@ -57,7 +59,13 @@ export abstract class Sheet extends EventEmitter {
     this.dataConfig = dataConfig;
     this.config = config;
     this.dataSet = this.getDataSet()
-    this.initCanvas(dom)
+    this.init(dom);
+
+  }
+
+  // 初始化
+  protected init(dom: MountElement) {
+    this.initCanvas(dom);
     this.bindEvents()
     this.initAdaptive()
     this.initInteraction()
@@ -118,7 +126,7 @@ export abstract class Sheet extends EventEmitter {
 
   // 初始化主题
   protected initTheme() {
-    // TODO:
+    this.theme = new BaseTheme(this)
   }
 
   // 初始化高清适配器
@@ -191,4 +199,54 @@ export abstract class Sheet extends EventEmitter {
 
   facet: Facet;
   protected abstract initFacet(): void;
+
+  // ========= 测量方法 ============
+  measureText = memoize(
+    (text: MeasureText, font: CSSStyleDeclaration): TextMetrics | null => {
+      const ctx = this.getCanvasElement()?.getContext('2d');
+
+      if (!ctx) return null
+
+      const { fontSize, fontFamily, fontWeight, fontStyle, fontVariant } = font;
+
+      ctx.font = [
+        fontStyle,
+        fontVariant,
+        fontWeight,
+        `${fontSize}px`,
+        fontFamily
+      ].join(' ').trim();
+
+      return ctx.measureText(text.toString());
+    },
+    (text: MeasureText, font: CSSStyleDeclaration) => [text, ...Object.values(font)].join('')
+  );
+
+  measureTextWidth(text: MeasureText, font: CSSStyleDeclaration): number {
+    return this.measureText(text, font)?.width ?? 0
+  }
+
+  measureTextHeight(text: MeasureText, font: CSSStyleDeclaration): number {
+    const textMetrics = this.measureText(text, font);
+    if (!textMetrics) return 0;
+
+    return textMetrics.actualBoundingBoxDescent + textMetrics.actualBoundingBoxAscent;
+  }
+
+  measureTextWithRoughly(text: MeasureText, font: CSSStyleDeclaration): number {
+    if (!text) return 0;
+
+    const chineseTextWidth = this.measureTextWidth('中', font);
+    const englishTextWidth = this.measureTextWidth('W', font);
+
+    return Array.from(text.toString()).reduce((width, char) => {
+      const charCode = char.charCodeAt(0);
+
+      const isUseEnglishWidht = charCode >= 0 && charCode <= 255
+
+      return width + (isUseEnglishWidht ? englishTextWidth : chineseTextWidth)
+    }, 0)
+  }
+
+
 }

@@ -1,11 +1,22 @@
-import type { SplitLine, Theme, ScrollbarTheme } from "../../common/interface";
+import type { SplitLine, Theme, ScrollbarTheme, BackgroundTheme, DataCellTheme, TextTheme, IconTheme } from "../../common/interface";
 import type { Sheet } from "table/src/sheet";
 
-import { merge } from "lodash-es";
+import { extend, merge } from "lodash-es";
 
-export class BaseSplitLine implements SplitLine {
+export class AbstractTheme<T> {
   theme: Theme;
 
+  constructor(theme: Theme) {
+    this.theme = theme;
+  }
+
+  merge(theme?: T) {
+    if (!theme) return
+
+    merge(this, theme)
+  }
+}
+export class BaseSplitLine extends AbstractTheme<SplitLine> implements SplitLine {
   horizontalBorderColor = 'red';
   horizontalBorderWidth = 1;
   horizontalBorderColorOpacity = 1;
@@ -21,32 +32,30 @@ export class BaseSplitLine implements SplitLine {
     left: 'red',
     right: 'red'
   }
-
-  constructor(theme: Theme) {
-    this.theme = theme;
-  }
-
-  merge(splitLine?: SplitLine) {
-    if (!splitLine) return
-
-    merge(this, splitLine)
-  }
 }
 
 export const DefaultScrollbarTheme: ScrollbarTheme = {
   size: 6
 }
 
-export class BaseScrollbar implements ScrollbarTheme {
-  theme: Theme;
-
+export class BaseScrollbar extends AbstractTheme<ScrollbarTheme> implements ScrollbarTheme {
   size: 6;
 
   thumbMinLength: number;
+}
 
-  constructor(theme: Theme) {
-    this.theme = theme;
-  }
+export class BaseBackground extends AbstractTheme<BackgroundTheme> implements BackgroundTheme {
+  color = '#F0F0F0';
+
+  opacity = 1;
+}
+
+export class BaseDataCell extends AbstractTheme<DataCellTheme> implements DataCellTheme {
+  cell: any = {};
+
+  text: TextTheme;
+
+  icon: IconTheme;
 }
 
 export class BaseTheme implements Theme {
@@ -58,12 +67,17 @@ export class BaseTheme implements Theme {
 
   scrollbar: BaseScrollbar = new BaseScrollbar(this);
 
+  background: BaseBackground = new BaseBackground(this);
+
+  dataCell: BaseDataCell = new BaseDataCell(this);
+
   constructor(sheet: Sheet) {
-    this.sheet = sheet
+    this.sheet = sheet;
   }
 
   updateTheme(theme: Theme) {
     this.splitLine.merge(theme.splitLine)
+    // TODO:
   }
 
   static getHorizontalBorderWidth(sheet: Sheet) {

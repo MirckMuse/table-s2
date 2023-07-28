@@ -1,4 +1,4 @@
-import type { DisplayObject, FederatedEvent, FederatedPointerEvent, LineStyleProps } from '@antv/g';
+import type { DisplayObject, FederatedPointerEvent, LineStyleProps } from '@antv/g';
 import { Group, Line } from '@antv/g';
 import { clamp } from 'lodash-es';
 import { OriginEventType, Position, ScrollbarTheme } from "../../common/interface";
@@ -71,7 +71,13 @@ export abstract class Scrollbar extends Group implements ScrollbarConfig {
     this.createTrack();
     this.createThumb();
     this.updateScrollbarPosition(this.position.x, this.position.y);
+    this.initEvents();
     this.bindEvents()
+  }
+
+  protected initEvents() {
+    this.initScrollbarPointerDownEvent();
+    this.initTrackClickEvent()
   }
 
   protected bindEvents() {
@@ -100,7 +106,7 @@ export abstract class Scrollbar extends Group implements ScrollbarConfig {
     }
   }
 
-  protected abstract onTrackClick: (event: MouseEvent) => void;
+  protected onTrackClick: (event: MouseEvent) => void;
 
   protected onTrackPointerOver = () => {
     const { hoverSize, hoverThumbColor } = this.theme
@@ -117,7 +123,10 @@ export abstract class Scrollbar extends Group implements ScrollbarConfig {
   }
 
   startPosition = 0;
-  protected abstract onScrollbarPointerDown: (event: FederatedPointerEvent) => void;
+  protected onScrollbarPointerDown: (event: FederatedPointerEvent) => void;
+
+  protected abstract initScrollbarPointerDownEvent(): void;
+  protected abstract initTrackClickEvent(): void;
 
   protected bindLaterEvent() {
     const canvas = this.ownerDocument?.defaultView;
@@ -242,14 +251,28 @@ export abstract class Scrollbar extends Group implements ScrollbarConfig {
 }
 
 export class HorizontalScrollbar extends Scrollbar {
-  protected onTrackClick = (event: MouseEvent) => {
+  protected initTrackClickEvent() {
+    this.onTrackClick = (event: MouseEvent) => {
 
-    const offset = event.x - this.position.x - this.thumbLength / 2;
+      const offset = event.x - this.position.x - this.thumbLength / 2;
 
-    const validOffset = this.getValidOffset(offset);
+      const validOffset = this.getValidOffset(offset);
 
-    this.updateThumbOffset(validOffset)
-  };
+      this.updateThumbOffset(validOffset)
+    };
+  }
+
+  protected initScrollbarPointerDownEvent() {
+    this.onScrollbarPointerDown = (event: FederatedPointerEvent) => {
+      event.preventDefault();
+      const { clientX } = event;
+
+      // 将开始的点记录下来
+      this.startPosition = clientX;
+
+      this.bindLaterEvent();
+    };
+  }
 
   protected onPointerMove = (event: Event) => {
     event.preventDefault()
@@ -305,27 +328,31 @@ export class HorizontalScrollbar extends Scrollbar {
       }
     }))
   }
-
-  protected onScrollbarPointerDown = (event: FederatedPointerEvent) => {
-    event.preventDefault();
-    const { clientX } = event;
-
-    // 将开始的点记录下来
-    this.startPosition = clientX;
-
-    this.bindLaterEvent();
-  };
 }
 
 export class VerticalScrollbar extends Scrollbar {
-  protected onTrackClick = (event: MouseEvent) => {
+  protected initTrackClickEvent() {
+    this.onTrackClick = (event: MouseEvent) => {
 
-    const offset = event.y - this.position.y - this.thumbLength / 2;
+      const offset = event.y - this.position.y - this.thumbLength / 2;
 
-    const validOffset = this.getValidOffset(offset);
+      const validOffset = this.getValidOffset(offset);
 
-    this.updateThumbOffset(validOffset)
-  };
+      this.updateThumbOffset(validOffset)
+    };
+  }
+
+  protected initScrollbarPointerDownEvent() {
+    this.onScrollbarPointerDown = (event: FederatedPointerEvent) => {
+      event.preventDefault();
+      const { clientY } = event;
+
+      // 将开始的点记录下来
+      this.startPosition = clientY;
+
+      this.bindLaterEvent();
+    };
+  }
 
   protected onPointerMove = (event: Event) => {
     event.preventDefault()
@@ -381,14 +408,4 @@ export class VerticalScrollbar extends Scrollbar {
       }
     }))
   }
-
-  protected onScrollbarPointerDown = (event: FederatedPointerEvent) => {
-    event.preventDefault();
-    const { clientY } = event;
-
-    // 将开始的点记录下来
-    this.startPosition = clientY;
-
-    this.bindLaterEvent();
-  };
 }
