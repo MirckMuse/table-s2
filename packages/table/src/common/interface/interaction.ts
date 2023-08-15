@@ -1,5 +1,6 @@
 import type { Interaction } from "../../interaction";
 import type { Sheet } from "../../sheet";
+import { CellType } from "./cell";
 
 export type OverscrollBehavior = 'auto' | 'none' | 'contain' | null;
 

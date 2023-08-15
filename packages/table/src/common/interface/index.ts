@@ -12,4 +12,6 @@ export * from './facet';
 
 export * from './theme';
 
-export * from './origin'
+export * from './origin';
+
+export * from './header';

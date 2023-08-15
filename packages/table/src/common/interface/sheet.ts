@@ -2,11 +2,13 @@ import type { InteractionConfig } from "./interaction";
 import type { AdaptiveConfig, HdAdapterConfig } from "./ui";
 import type { Sheet } from "../../sheet";
 import type { Facet } from "../../facet";
+import { ColCellConfig, DataCellConfig } from "./cell";
+import { DataIndex } from "./facet";
 
 export type RowData = Record<string, unknown>;
 
 export type ColumnCustomCellOption = {
-  record: RowData,
+  record: RowData | null,
 
   index: number,
 
@@ -31,23 +33,76 @@ export type ColumnCustomCellResult = {
   // TODO:
 }
 
+export type ColumnCustomHeaderResult = ColumnCustomCellResult & {
+}
+
 export type ColumnCustomCell = (option: ColumnCustomCellOption) => ColumnCustomCellResult;
+
+export type ColumnCustomHeaderCell = (column: Column) => ColumnCustomHeaderResult;
 
 export interface Column {
   key?: string;
 
   dataIndex: string;
 
-  title: string;
+  title: string | (() => string);
+
+  children?: Column[];
 
   customRender?: ColumnCustomRender;
 
   customCell?: ColumnCustomCell;
+
+  customHeaderCell?: ColumnCustomHeaderCell;
+
+  // sortOrder  > sorter > defaultSortOrder
+  defaultSortOrder?: SortOrder;
+
+  sorter?: SorterFunction | boolean;
+
+  sortOrder?: SortOrder | null;
+
+  onFilter?: ColumnFilter;
+
+  width?: number;
+
+  minWidth?: number;
+
+  maxWidth?: number;
 }
 
-export type Sorter = any;
+export type ColumnFilter = (rowData: RowData, index: number, originDatas: RowData[]) => boolean;
 
-export type Filter = any;
+export type SorterFunction = (pre: RowData, current: RowData) => number;
+
+export enum SortOrder {
+  Ascend = 'ascend',
+  Descend = 'descend'
+}
+
+export type Sorter = SorterFunction | boolean;
+
+export type SorterParam = {
+  sorter: Sorter,
+
+  order: SortOrder | null
+};
+
+export type BackendSorterParam = {
+  sorter: DataIndex,
+
+  order: SortOrder | null
+}
+
+export type FrontendSorterParam = {
+  sorter: SorterFunction | DataIndex,
+
+  order: SortOrder | null,
+
+  defaultOrder?: SortOrder | null,
+}
+
+export type Filter = ColumnFilter;
 
 export interface DataConfig {
 
@@ -55,11 +110,6 @@ export interface DataConfig {
 
 
   columns: Column[];
-
-  /**
-   * 排序字段
-   */
-  sorters?: Sorter[];
 
   /**
    * 筛选字段
@@ -78,13 +128,6 @@ export interface Pagination {
   total?: number;
 }
 
-// TODO:
-export interface Column {
-  key?: string;
-
-  dataIndex: string;
-}
-
 export interface TransformCellTextOptions {
   column: Column;
 
@@ -99,6 +142,8 @@ export type TransformCellText = string | number | ((options: TransformCellTextOp
  * 通用配置
  */
 export interface Config {
+  layout?: LayoutType;
+
   // 是否开启对 css transform 的支持
   supportsCSSTransform?: boolean;
 
@@ -111,6 +156,10 @@ export interface Config {
   // 自适应配置。
   adaptive?: boolean | AdaptiveConfig;
 
+  colCell?: ColCellConfig;
+
+  dataCell?: DataCellConfig;
+
   facet?: (sheet: Sheet) => Facet;
 
   pagination?: Pagination;
@@ -120,3 +169,7 @@ export interface Config {
   [key: string]: unknown;
 }
 
+export enum LayoutType {
+  Adaptive = 'adaptive',
+  Compact = 'compact',
+}

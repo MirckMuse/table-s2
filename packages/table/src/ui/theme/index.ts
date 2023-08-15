@@ -1,4 +1,4 @@
-import type { SplitLine, Theme, ScrollbarTheme, BackgroundTheme, DataCellTheme, TextTheme, IconTheme } from "../../common/interface";
+import type { SplitLine, Theme, ScrollbarTheme, BackgroundTheme, DataCellTheme, TextTheme, IconTheme, ColCellTheme, CellTheme } from "../../common/interface";
 import type { Sheet } from "table/src/sheet";
 
 import { extend, merge } from "lodash-es";
@@ -51,11 +51,76 @@ export class BaseBackground extends AbstractTheme<BackgroundTheme> implements Ba
 }
 
 export class BaseDataCell extends AbstractTheme<DataCellTheme> implements DataCellTheme {
-  cell: any = {};
+  cell: CellTheme = {
+    verticalBorderColor: '#F0F0F0',
+    verticalBorderColorOpacity: 1,
+    verticalBorderWidth: 1,
+    horizontalBorderColor: '#F0F0F0',
+    horizontalBorderColorOpacity: 1,
+    horizontalBorderWidth: 1,
+    backgroundColor: '#FFF',
+    backgroundColorOpacity: 1
+  };
 
-  text: TextTheme;
+  text: TextTheme = {
+    fontFamily: 'PingFang SC',
+    textAlign: 'center',
+    verticalAlign: "middle",
+    fontSize: 14,
+    fontWeight: 400,
+    fill: '#040B29',
+    linkTextFill: 'blue',
+    opacity: 1
+  };
 
-  icon: IconTheme;
+  // TODO:
+  icon: IconTheme = {
+    fill: 'red',
+    size: 16,
+    margin: {
+      top: 4,
+      right: 4,
+      bottom: 4,
+      left: 4
+    }
+  };
+}
+
+export class BaseColCell extends AbstractTheme<ColCellTheme> implements ColCellTheme {
+  cell: CellTheme = {
+    verticalBorderColor: '#F0F0F0',
+    verticalBorderColorOpacity: 1,
+    verticalBorderWidth: 1,
+    horizontalBorderColor: '#F0F0F0',
+    horizontalBorderColorOpacity: 1,
+    horizontalBorderWidth: 1,
+
+    backgroundColor: '#FAFAFA',
+    backgroundColorOpacity: 1
+  };
+
+  text: TextTheme = {
+    fontFamily: 'PingFang SC',
+    textAlign: 'center',
+    verticalAlign: "middle",
+    fontSize: 14,
+    fontWeight: 700,
+    fill: '#040B29',
+    linkTextFill: 'blue',
+    opacity: 1
+  };
+
+  // TODO:
+  icon: IconTheme = {
+    fill: 'red',
+    size: 16,
+    margin: {
+      top: 4,
+      right: 4,
+      bottom: 4,
+      left: 4
+    }
+  };
 }
 
 export class BaseTheme implements Theme {
@@ -70,6 +135,8 @@ export class BaseTheme implements Theme {
   background: BaseBackground = new BaseBackground(this);
 
   dataCell: BaseDataCell = new BaseDataCell(this);
+
+  colCell: BaseColCell = new BaseColCell(this);
 
   constructor(sheet: Sheet) {
     this.sheet = sheet;

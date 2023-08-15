@@ -44,7 +44,8 @@ export class GridGroup extends Group {
     const { cols, rows } = this.gridInfo
 
     // 绘制垂直的边框
-    const { verticalBorderWidth, verticalBorderColorOpacity, verticalBorderColor } = style;
+    const { verticalBorderWidth = 1, verticalBorderColorOpacity, verticalBorderColor } = style;
+
     const halfVerticalBorderWidth = verticalBorderWidth / 2;
     const renderColLine = (colX: number) => {
       this.gridGroup.appendChild(new Line({
@@ -63,7 +64,7 @@ export class GridGroup extends Group {
     cols.forEach(renderColLine)
 
     // 绘制水平的直线
-    const { horizontalBorderColor, horizontalBorderWidth, horizontalBorderColorOpacity } = style;
+    const { horizontalBorderColor, horizontalBorderWidth = 1, horizontalBorderColorOpacity } = style;
     const halfHorizontalBorderWidth = horizontalBorderWidth / 2;
 
     const renderRowLine = (colY: number) => {

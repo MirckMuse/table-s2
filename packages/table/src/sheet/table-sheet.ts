@@ -13,7 +13,7 @@ export class TableSheet extends Sheet {
     this.facet.render()
   }
 
-  public getDataSet(): DataSet {
+  public createDataSet(): DataSet {
     return new TableDataSet(this)
   }
 }

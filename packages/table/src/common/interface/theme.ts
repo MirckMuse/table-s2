@@ -1,4 +1,4 @@
-import { CellType } from "./interaction";
+import { CellType } from "./cell";
 
 export interface SplitLine {
   /* 水平分割线颜色 */
@@ -69,6 +69,10 @@ export interface CellTheme {
   horizontalBorderColorOpacity?: number;
 
   horizontalBorderColor?: string;
+
+  backgroundColor?: string;
+
+  backgroundColorOpacity?: number;
 }
 
 // 文本内容的水平对齐方式, 默认 left
@@ -85,7 +89,12 @@ export interface TextAlignStyle {
   // 文本内容的水平对齐方式, 默认 left
 }
 
+// rome-ignore lint/suspicious/noEmptyInterface: <explanation>
 export interface DataCellTheme extends DefaultCellTheme {
+}
+
+// rome-ignore lint/suspicious/noEmptyInterface: <explanation>
+export interface ColCellTheme extends DefaultCellTheme {
 }
 
 type CellThemes = {

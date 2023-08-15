@@ -96,13 +96,15 @@ export function calcuateTextIconHorizontalPosition(
 }
 
 // 计算文本在水平方向上的坐标
-export function calcuateTextHorizontalPosition(bbox: SimpleBBox,
+export function calcuateTextHorizontalPosition(
+  bbox: SimpleBBox,
   textWidth: number,
   textAlign: TextAlign,
   iconStyle: IconTheme,
-  icon: CellIcons) {
-  const leftIconWidth = calcuateIconsWidth(icon.left?.length ?? 0, iconStyle, 'left');
-  const rightIconWidth = calcuateIconsWidth(icon.right?.length ?? 0, iconStyle, 'right');
+  icon: CellIcons
+) {
+  const leftIconWidth = calcuateIconsWidth(icon?.left?.length ?? 0, iconStyle, 'left');
+  const rightIconWidth = calcuateIconsWidth(icon?.right?.length ?? 0, iconStyle, 'right');
 
   const strategy = HorizontalCalcuateStrategy[textAlign] || HorizontalCalcuateStrategy.left;
 

@@ -3,6 +3,7 @@ import { ScrollOffset, ScrollSpeedRatio, ScrollbarPositionType, WheelOffset } fr
 import { isMobile } from '../../shared';
 import { BaseEvent } from "../../event/base";
 import { HorizontalScrollbar, ScrollType, Scrollbar, VerticalScrollbar } from './scrollbar';
+import { TableEvent } from '../../common/constant';
 
 export function getAdjustedScrollOffset(scroll: number, content: number, container: number) {
   return Math.max(0, Math.min(content - container, scroll))
@@ -10,50 +11,55 @@ export function getAdjustedScrollOffset(scroll: number, content: number, contain
 
 export class ScrollEvent extends BaseEvent {
 
-  horizontalScrollbar: Scrollbar;
+  horizontalScrollbar: HorizontalScrollbar;
 
-  verticalScrollbar: Scrollbar;
+  verticalScrollbar: VerticalScrollbar;
 
   public bindEvents(): void {
     this.renderScrollbars();
-    this.bindPCScroll()
+
+    if (isMobile()) {
+      this.bindMobileScroll();
+    } else {
+      this.bindPCScroll();
+    }
   }
 
   renderScrollbars() {
-    const { scrollX, scrollY } = this.getScrollOffset()
-    const facet = this.sheet.facet
+    const { scrollX, scrollY } = this.getScrollOffset();
+    const facet = this.sheet.facet;
 
-    const { width: panelWidth, height: panelHeight } = facet.panelBBox
-    const realWidth = facet.getRealWidth()
-    const realHeight = facet.getRealHeight()
+    const { width: panelWidth, height: panelHeight } = facet.panelBBox;
+    const realWidth = facet.getRealWidth();
+    const realHeight = facet.getRealHeight();
 
-    this.renderHorizontalScrollbar(panelWidth, realWidth, scrollX)
-    this.renderVerticalScrollbar(panelHeight, realHeight, scrollY)
+    this.renderHorizontalScrollbar(panelWidth, realWidth, scrollX);
+    this.renderVerticalScrollbar(panelHeight, realHeight, scrollY);
   }
 
   renderHorizontalScrollbar(panelWidth: number, realWidth: number, scrollX: number) {
-    if (Math.floor(panelWidth) > Math.floor(realWidth)) return
+    if (Math.floor(panelWidth) > Math.floor(realWidth)) return;
 
-    const panelBBox = this.sheet.facet.panelBBox
+    const panelBBox = this.sheet.facet.panelBBox;
 
-    const halfScrollbarSize = this.getScrollbarSize() / 2
+    const halfScrollbarSize = this.getScrollbarSize() / 2;
 
     const { y: scrollbarY } = this.getScrollbarPosition();
 
-    const finalWidth = panelWidth
+    const finalWidth = panelWidth;
 
-    const finalPosition = { x: panelBBox.minX + halfScrollbarSize, y: scrollbarY }
+    const finalPosition = { x: panelBBox.minX + halfScrollbarSize, y: scrollbarY };
 
-    const finalRealWidth = realWidth
+    const finalRealWidth = realWidth;
 
-    const maxOffset = finalRealWidth - finalWidth
+    const maxOffset = finalRealWidth - finalWidth;
 
     const { scrollbar: scrollbarTheme } = this.sheet.theme;
 
     const thumbLength = Math.max(
       (finalWidth / finalRealWidth) * finalWidth,
       scrollbarTheme.thumbMinLength
-    )
+    );
 
     const scrollbar = new HorizontalScrollbar({
       scrollMaxOffset: maxOffset,
@@ -62,7 +68,7 @@ export class ScrollEvent extends BaseEvent {
       trackLength: finalWidth,
       position: finalPosition,
       thumbOffset: (scrollX * (finalWidth - thumbLength)) / maxOffset
-    })
+    });
 
     scrollbar.addEventListener(ScrollType.ScrollChange, (event: CustomEvent) => {
       const { offset, updateThumbOffset } = event.detail as any
@@ -78,10 +84,10 @@ export class ScrollEvent extends BaseEvent {
 
       this.setScrollOffset({ scrollX })
       this.sheet.facet.dynamicRenderCell();
-    })
+    });
 
     this.horizontalScrollbar = scrollbar;
-    this.sheet.facet.foregroundGroup.appendChild(this.horizontalScrollbar)
+    this.sheet.facet.foregroundGroup.appendChild(this.horizontalScrollbar);
   }
 
   renderVerticalScrollbar(panelHeight: number, realHeight: number, scrollY: number) {
@@ -129,6 +135,10 @@ export class ScrollEvent extends BaseEvent {
   protected bindPCScroll() {
     const canvas = this.sheet.getCanvasElement()
     canvas?.addEventListener('wheel', this.onWheel)
+  }
+
+  protected bindMobileScroll() {
+    // TODO: 
   }
 
   public unbindEvents(): void {
@@ -270,6 +280,7 @@ export class ScrollEvent extends BaseEvent {
     return (offset * (trackLength - thumbLength)) / scrollMaxOffset;
   }
 
+  // 仅仅是更新 scroll 的偏移量
   setScrollOffset(scrollOffset: ScrollOffset) {
     Object.keys(scrollOffset).forEach((key) => {
       const offset = get(scrollOffset, key);
@@ -280,7 +291,40 @@ export class ScrollEvent extends BaseEvent {
     });
   }
 
+  // 更新 scroll 的同时
+  updateScrollOffset(scrollOffset: ScrollOffset, animate = true) {
+    if (animate) {
+      this.scrollAnimation(scrollOffset);
+    } else {
+      this.scrollImmediately(scrollOffset);
+    }
+  }
+
+  scrollAnimation(scrollOffset: ScrollOffset) {
+    // TODO: scrollWithAnimation
+  }
+
+  scrollImmediately(scrollOffset: ScrollOffset) {
+    const scroll = this.getAdjustedScrollOffset(scrollOffset);
+    this.updateScrollOffset(scroll);
+    this.startScroll();
+  }
+
   scrollFrameId: ReturnType<typeof requestAnimationFrame> | null = null;
+
+  startScroll(isEmitScrollEvent = true) {
+    const { scrollX, scrollY } = this.getScrollOffset();
+
+    this.horizontalScrollbar.updateThumbOffset(this.getScrollbarOffset(scrollX, this.horizontalScrollbar));
+
+    this.verticalScrollbar.updateThumbOffset(this.getScrollbarOffset(scrollY, this.verticalScrollbar));
+
+    this.sheet.facet.dynamicRenderCell();
+
+    if (isEmitScrollEvent) {
+      this.emitScrollEvent();
+    }
+  }
 
   stopScroll(event: WheelEvent) {
     event?.preventDefault?.();
@@ -421,5 +465,9 @@ export class ScrollEvent extends BaseEvent {
 
   resetScrollOffset() {
     this.setScrollOffset({ scrollX: 0, scrollY: 0 })
+  }
+
+  emitScrollEvent() {
+    this.sheet.emit(TableEvent.GLOBAL_SCROLL, this.getScrollOffset());
   }
 }

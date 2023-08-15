@@ -5,7 +5,7 @@ import { ELLIPSIS_SYMBOL } from "../common/constant";
 import { TextView } from "../ui/TextView";
 import { renderRect, renderTextView } from "../shared";
 
-export abstract class Cell<Meta extends BaseViewMeta> extends Group {
+export abstract class Cell<Meta extends BaseViewMeta = any> extends Group {
   // 当前单元格的元信息
   protected meta: Meta;
   getMeta() {
@@ -50,6 +50,11 @@ export abstract class Cell<Meta extends BaseViewMeta> extends Group {
   // 图标
   cellIcon: CellIcons;
 
+  protected getCellIconWidth(): number {
+    // TODO: getActionAndConditionIconWidth
+    return 0
+  }
+
   constructor(sheet: Sheet, meta: Meta, ...restOptions: unknown[]) {
     super({});
     this.meta = meta;
@@ -84,9 +89,9 @@ export abstract class Cell<Meta extends BaseViewMeta> extends Group {
       return transformCellText;
     }
 
-    const { column, record, rowIndex } = this.meta
+    const { column } = this.meta
 
-    return transformCellText({ column, record, rowIndex })
+    return transformCellText({ column, record: {}, rowIndex: -1 })
   }
 
   // 获取省略的文字
@@ -157,8 +162,10 @@ export abstract class Cell<Meta extends BaseViewMeta> extends Group {
   protected renderTextShape() {
     // 获取文字、展示的最大宽度和样式。
     const { formattedText } = this.getFormattedResult();
+
     const viewTextMaxWidth = this.getViewTextMaxWidth();
     const textStyle = this.getTextStyle();
+
     const { measureTextWidth } = this.sheet;
 
     const emptyPlaceholder = this.getEmptyPlaceholder();
@@ -168,8 +175,10 @@ export abstract class Cell<Meta extends BaseViewMeta> extends Group {
     this.viewText = viewText.toString();
     this.viewTextWidth = measureTextWidth(this.viewText, textStyle as any as CSSStyleDeclaration);
 
+
     // 渲染文字
     const textPosition = this.getTextPosition();
+
     this.textShape = renderTextView(this, this.textShape, {
       text: this.viewText,
       ...textPosition,

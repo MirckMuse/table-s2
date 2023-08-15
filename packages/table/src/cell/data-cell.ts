@@ -1,6 +1,7 @@
 import { BackgoundColor, CellBorderPosition, CellBoxSizing, CellIconPosition, CellTheme, CellType, ColumnCustomCellResult, ColumnCustomRenderOption, FormattedResult, IconTheme, Position, TextTheme, ViewMeta } from "../common/interface";
 import { calcuateIconVerticalPosition, calcuateTextHorizontalPosition, calcuateTextIconHorizontalPosition, calcuateTextVerticalPosition } from "../common/utils";
 import { Cell } from "./cell";
+import { isNil } from 'lodash-es'
 
 export class DataCell extends Cell<ViewMeta> {
 
@@ -12,6 +13,22 @@ export class DataCell extends Cell<ViewMeta> {
   protected initIconConfig() {
     // TODO:
   }
+
+  // 获取占位符
+  protected getEmptyPlaceholder(): string | number {
+    const { config: { transformCellText } } = this.sheet;
+
+    if (!transformCellText) return ''
+
+    if (typeof transformCellText !== 'function') {
+      return transformCellText;
+    }
+
+    const { column, record, rowIndex } = this.meta
+
+    return transformCellText({ column, record, rowIndex })
+  }
+
 
   // ========== 处理的事件 ============
 
@@ -32,7 +49,7 @@ export class DataCell extends Cell<ViewMeta> {
   }
 
   protected update(): void {
-    throw new Error("Method not implemented.");
+    // throw new Error("Method not implemented.");
   }
 
   // 获取格式化的结果
@@ -40,15 +57,17 @@ export class DataCell extends Cell<ViewMeta> {
     const { rowIndex, record, column } = this.meta;
 
     const customRender = column.customRender || (({ text }: ColumnCustomRenderOption) => text);
-    const text = record[column.dataIndex] as string;
+    const text = record?.[column.dataIndex] as string;
+
+    const formattedValue = customRender({
+      text,
+      record,
+      column,
+      index: rowIndex
+    });
 
     return {
-      formattedText: customRender({
-        text,
-        record,
-        column,
-        index: rowIndex
-      }).toString(),
+      formattedText: isNil(formattedValue) ? '' : formattedValue.toString(),
       value: text
     }
   }
@@ -75,10 +94,15 @@ export class DataCell extends Cell<ViewMeta> {
     // 兼容 css 的样式处理，将 css 的样式转换成 text theme。
     const customCellStyle = this.getCustomCell()?.style ?? {} as CSSStyleDeclaration;
     const pickedTextStyle = Object.keys(textStyle).reduce<any>((result, key) => {
-      result[key] = customCellStyle[key as keyof CSSStyleDeclaration]
+      const value = customCellStyle[key as keyof CSSStyleDeclaration]
+      if (value) {
+        result[key] = value
+      }
       return result
     }, {}) as TextTheme;
-    pickedTextStyle.fill = customCellStyle.color;
+    if (customCellStyle.color) {
+      pickedTextStyle.fill = customCellStyle.color;
+    }
 
     return {
       ...textStyle,

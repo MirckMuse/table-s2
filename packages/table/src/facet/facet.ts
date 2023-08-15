@@ -1,16 +1,17 @@
-import type { Diff, LayoutInfo, PanelIndexes } from "../common/interface/facet";
+import type { Diff, Indexes, LayoutInfo, PanelIndexes, ViewCellHeights, ViewCellWidths } from "../common/interface/facet";
 import type { Sheet } from "../sheet";
 
 import { Group, Rect } from "@antv/g";
 import { last } from 'lodash-es';
-import { Cell } from "../cell";
-import { Background_Group_Key, Background_Group_ZIndex, Foreground_Group_Key, Foreground_Group_ZIndex, Panel_Group_Key, Panel_Group_ZIndex, Panel_Scroll_Group_Id, Panel_Scroll_Group_Key, Panel_Scroll_Group_ZIndex, TableEvent } from "../common/constant";
-import { BaseViewMeta, ViewMeta } from "../common/interface";
+import { Cell, DataCell } from "../cell";
+import { Background_Group_Key, Background_Group_ZIndex, Default_Col_Cell_Height, Default_Data_Cell_Height, Foreground_Group_Key, Foreground_Group_ZIndex, Panel_Group_Key, Panel_Group_ZIndex, Panel_Scroll_Group_Key, Panel_Scroll_Group_ZIndex, TableEvent } from "../common/constant";
+import { BaseViewMeta, ColViewMeta, Column, SimpleBBox, WheelOffset } from "../common/interface";
+import { GridInfo } from "../group";
+import { PanelScrollGroup } from "../group/panel-scroll-group";
 import { ColumnHeader } from "../header";
+import { calcuateViewportIndexes, diffIndexes, translateGroup } from "../utils";
 import { PanelBBox } from "./bbox/panel_bbox";
 import { ScrollEvent, getAdjustedScrollOffset } from "./scroll";
-import { PanelScrollGroup } from "../group/panel-scroll-group";
-import { GridInfo } from "../group";
 
 export abstract class Facet {
   sheet: Sheet;
@@ -43,8 +44,11 @@ export abstract class Facet {
     this.initForegroundGroup();
   }
 
-  translateRelatedGroups() {
+  translateRelatedGroups(scrollX: number, scrollY: number) {
+    translateGroup(this.panelScrollGroup, scrollX, scrollY);
     // TODO:
+
+    this.columnHeader?.renderByScrollOffset({ scrollX, scrollY });
   }
 
   protected initBackgroundGroup() {
@@ -124,13 +128,6 @@ export abstract class Facet {
 
   renderSheetHeader() {
     this.renderColumnHeader();
-    // TODO:
-
-    this.foregroundGroup.appendChild(this.columnHeader);
-  }
-
-  getColumnHeader() {
-    return this.columnHeader;
   }
 
   getGridInfo(): GridInfo {
@@ -143,13 +140,21 @@ export abstract class Facet {
 
   protected renderColumnHeader() {
     if (this.columnHeader) return;
-    // TODO:
 
-    this.columnHeader = new ColumnHeader();
+    const { x, width } = this.panelBBox;
+
+    this.columnHeader = new ColumnHeader(this.sheet, {
+      width,
+      height: 100, // TODO: 这里的高度需要遍历 col 后才能得知
+      position: { x, y: 0 },
+      colCellMetas: this.layoutInfo.colCellMetas || []
+    });
+
+    this.foregroundGroup.appendChild(this.columnHeader);
   }
 
-  adjustScrollOffset() {
-    // TODO:
+  getColumnHeader(): ColumnHeader | null {
+    return this.columnHeader ?? null;
   }
 
   renderBackground() {
@@ -186,41 +191,62 @@ export abstract class Facet {
   }
 
   // 可视单元格的宽度
-  viewCellWidths: number[];
+  viewCellWidths: ViewCellWidths;
 
   // 可视单元格的高度
-  viewCellHeights: number[];
+  viewCellHeights: ViewCellHeights;
 
   getRealWidth() {
-    return last(this.viewCellWidths) ?? 0
+    return last(Object.values(this.viewCellWidths).sort((a, b) => a - b)) ?? 0
+  }
+
+  getRowCellHeight() {
+    return this.sheet.getConfig().dataCell?.height ?? Default_Data_Cell_Height;
   }
 
   getRealHeight() {
-    // TODO:
-    return 0
+    const pagination = this.sheet.getConfig().pagination
+
+    if (pagination) {
+      // TODO:
+      return 0
+    }
+
+    return this.viewCellHeights.getTotalHeight();
   }
 
   // 计算可视单元格的尺寸
   protected calculateViewCellsSize() {
-    let reduceWidth = 0;
+    this.viewCellWidths = this.calculateViewCellWidths();
 
-    this.viewCellWidths = (this.layoutInfo?.colLeafNodes ?? []).reduce<number[]>((widths, node) => {
-      reduceWidth += node.width;
-      return widths.concat(reduceWidth)
-    }, []);
-
-    // TODO:
-    this.viewCellHeights = []
+    this.viewCellHeights = this.calculateViewCellHeights();
   }
 
-  layoutInfo: LayoutInfo;
+  protected calculateViewCellWidths() {
+    let reduceWidth = 0;
+    return (this.layoutInfo.colCellLeafNodes ?? []).reduce<ViewCellWidths>((widths, node) => {
+      reduceWidth += node.width;
+      widths[node.column.dataIndex] = reduceWidth;
+      return widths
+    }, {});
+  }
 
+  protected abstract calculateViewCellHeights(): ViewCellHeights;
+
+  layoutInfo: LayoutInfo;
   protected abstract calcLayoutInfo(): LayoutInfo;
 
   panelGroup: Group;
   public panelBBox: PanelBBox;
   protected calculatePanelBBox() {
     this.panelBBox = new PanelBBox(this, true)
+  }
+
+  // 滚动的范围是否在 panel 中。
+  isScrollOverPanel({ offsetX, offsetY }: WheelOffset) {
+    const { minX, minY, maxX, maxY } = this.panelBBox;
+
+    return minX < offsetX && offsetX < maxX && minY < offsetY && offsetY < maxY;
   }
 
   getPaginationScrollY(): number {
@@ -241,46 +267,57 @@ export abstract class Facet {
     const scrollY = originalScrollY + this.getPaginationScrollY();
 
     // FIXME:
-    const totalHeight = 0
+    const totalHeight = 0;
 
     const adjustedScrollY = getAdjustedScrollOffset(scrollY, totalHeight, this.panelBBox.viewportHeight)
 
     // TODO: S2 会隐藏 tooltip 和清除悬浮时间
-
     this.renderCell(scrollX, adjustedScrollY);
     this.updatePanelScrollGroup();
-    this.translateRelatedGroups();
+    this.translateRelatedGroups(scrollX, scrollY);
     // TODO:
     this.afterRender()
   }
 
   protected preCellIndexes: PanelIndexes | null;
 
-  diffPanelIndexes(preIndexes: PanelIndexes, indexes: PanelIndexes): Diff {
-    // TODO:
-    return {
-      add: [], remove: []
-    }
+  get lastViewColumns(): Column[] {
+    // TODO: 获取最后一列可见的列配置
+    return []
   }
 
-  protected abstract getCellMeta(rowIndex: number, dataIndex: string): BaseViewMeta;
+  diffPanelIndexes(preIndexes: PanelIndexes | null, indexes: PanelIndexes): Diff {
+    return Object.keys(indexes).reduce<Diff>(
+      (result, key) => {
+        const { add, remove } = diffIndexes(
+          (preIndexes?.[key as keyof PanelIndexes] ?? []) as Indexes,
+          indexes[key as keyof PanelIndexes] as Indexes
+        )
 
-  protected abstract createCell(viewMeta: BaseViewMeta): Cell<BaseViewMeta>;
+        result.add = result.add.concat(add);
+        result.remove = result.remove.concat(remove);
+        return result
+      },
+      { add: [], remove: [] }
+    );
+  }
 
+  // 渲染单元格
   protected renderCell(scrollX: number, scrollY: number) {
     const indexes = this.calculateXYIndexes(scrollX, scrollY);
 
-    const { add, remove } = this.diffPanelIndexes(this.preCellIndexes!, indexes);
+    const { add, remove } = this.diffPanelIndexes(this.preCellIndexes, indexes);
 
     add.forEach(([rowIndex, dataIndex]) => {
       const meta = this.getCellMeta(rowIndex, dataIndex);
+      if (!meta) return
 
       const cell = this.createCell(meta);
       cell.name = `${rowIndex}-${dataIndex}`;
       this.addCell(cell);
     })
 
-    const cells = this.getAllCellsByType();
+    const cells = this.getDataCells();
     remove.forEach(([rowIndex, dataIndex]) => {
       const matchedCell = cells.find(cell => cell.name === `${rowIndex}-${dataIndex}`)
 
@@ -296,10 +333,19 @@ export abstract class Facet {
   }
 
   calculateXYIndexes(scrollX: number, scrollY: number): PanelIndexes {
+    const { viewportHeight, viewportWidth } = this.panelBBox;
+
+    const viewport: SimpleBBox = { x: 0, y: 0, height: viewportHeight, width: viewportWidth };
+
     return {
-      center: [0, 0, 0, 0]
+      center: calcuateViewportIndexes({
+        scrollX,
+        scrollY,
+        viewCellHeights: this.viewCellHeights,
+        viewCellWidths: this.viewCellWidths,
+        viewport
+      })
     }
-    // TODO:
   }
 
   afterRender() {
@@ -314,23 +360,34 @@ export abstract class Facet {
     return children;
   }
 
-  getAllCellsByType(cellType = Cell) {
+  getDataCells() {
     const allCells = this.getAllCells();
 
     return allCells.reduce<Cell<BaseViewMeta>[]>((result, cell) => {
-      if (cell instanceof Cell) {
+      if (cell instanceof DataCell) {
         result.push(cell)
       }
 
       if (cell instanceof Group) {
-        result = result.concat(cell.children.filter(item => item instanceof cellType) as Cell<BaseViewMeta>[]);
+        return result.concat(cell.children.filter(item => item instanceof DataCell) as DataCell[]);
       }
 
       return result;
     }, []);
   }
 
-  addCell = (cell: Cell<BaseViewMeta>) => {
-    this.initPanelScrollGroup
+  protected getColCellHeight(meta: ColViewMeta): number {
+    // TODO: S2 getDefaultColNodeHeight
+    return Default_Col_Cell_Height;
   }
+
+  // 新增一个 cell。
+  addCell = (cell: Cell<BaseViewMeta>) => {
+    this.panelScrollGroup?.appendChild(cell);
+    this.sheet.emit(TableEvent.LAYOUT_CELL_MOUNTED, cell)
+  }
+
+  protected abstract getCellMeta(rowIndex: number, dataIndex: string): BaseViewMeta | null;
+
+  protected abstract createCell(viewMeta: BaseViewMeta): Cell;
 }

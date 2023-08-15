@@ -6,17 +6,18 @@ export function renderTextView<T = any>(group: Group, textview: TextView<T>, tex
   if (group.contains(textview)) {
     group.removeChild(textview);
   }
+
   return group.appendChild(new TextView<T>({
     style: {
       fontVariant: 'normal',
       fontStyle: 'normal',
       lineWidth: 1,
-      ...textStyle
+      ...textStyle,
     }
-  }, appendInfo))
+  }, appendInfo));
 }
 
 // 渲染一个矩形
 export function renderRect(group: Group, style: RectStyleProps): Rect {
-  return group.appendChild(new Rect({ style }))
+  return group.appendChild(new Rect({ style }));
 }

@@ -25,3 +25,7 @@ export const Panel_Scroll_Group_Key = 'panel_scroll_group_key';
 export const Panel_Scroll_Group_ZIndex = 1;
 
 
+export const Col_Scroll_Group_Key = 'col_scroll_group';
+export const Col_Scroll_Group_Z_Index = 4;
+
+

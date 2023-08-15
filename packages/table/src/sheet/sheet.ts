@@ -44,11 +44,32 @@ export abstract class Sheet extends EventEmitter {
     }
   }
 
-  protected dataSet: DataSet;
-
   store = new Store();
 
-  public abstract getDataSet(): DataSet;
+  protected dataSet: DataSet;
+  public getDataSet() {
+    return this.dataSet;
+  }
+
+  resize(width: number, height: number) {
+    // 没有初始化 canvas 不能修改宽高
+    if (!this.getCanvasElement()) return;
+    // 宽高没有修改，不用修改宽高
+    if (width === this.width && height === this.height) return;
+
+    // 合并配置
+    this.updateConfig({ width, height });
+    this.canvas.resize(width, height);
+  }
+
+  public abstract createDataSet(): DataSet;
+
+  protected initDataSet() {
+    this.dataSet = this.createDataSet();
+    this.dataSet.setDataConfig(this.dataConfig);
+  }
+
+  mountDOM: MountElement;
 
   constructor(
     dom: MountElement,
@@ -57,14 +78,14 @@ export abstract class Sheet extends EventEmitter {
   ) {
     super();
     this.dataConfig = dataConfig;
-    this.config = config;
-    this.dataSet = this.getDataSet()
+    this.mountDOM = dom;
+    this.updateConfig(config, true);
     this.init(dom);
-
   }
 
   // 初始化
   protected init(dom: MountElement) {
+    this.initDataSet();
     this.initCanvas(dom);
     this.bindEvents()
     this.initAdaptive()
@@ -90,9 +111,9 @@ export abstract class Sheet extends EventEmitter {
       devicePixelRatio: Math.max(window.devicePixelRatio, MIN_DEVICE_PIXEL_RATIO),
       renderer: new Renderer(),
       supportsCSSTransform
-    })
+    });
 
-    this.transformCanvas2Block()
+    this.transformCanvas2Block();
   }
 
   /**
@@ -222,7 +243,7 @@ export abstract class Sheet extends EventEmitter {
     (text: MeasureText, font: CSSStyleDeclaration) => [text, ...Object.values(font)].join('')
   );
 
-  measureTextWidth(text: MeasureText, font: CSSStyleDeclaration): number {
+  measureTextWidth = (text: MeasureText, font: CSSStyleDeclaration): number => {
     return this.measureText(text, font)?.width ?? 0
   }
 
