@@ -38,10 +38,21 @@ export const DefaultScrollbarTheme: ScrollbarTheme = {
   size: 6
 }
 
+// TODO:
 export class BaseScrollbar extends AbstractTheme<ScrollbarTheme> implements ScrollbarTheme {
-  size: 6;
+  size = 6;
 
-  thumbMinLength: number;
+  hoverSize = 6;
+
+  thumbMinLength = 80;
+
+  lineCap?: CanvasLineCap = 'round';
+
+  trackColor = 'blue';
+
+  thumbColor = 'red';
+
+  hoverThumbColor = 'green';
 }
 
 export class BaseBackground extends AbstractTheme<BackgroundTheme> implements BackgroundTheme {

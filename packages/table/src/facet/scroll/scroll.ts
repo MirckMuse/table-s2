@@ -26,6 +26,7 @@ export class ScrollEvent extends BaseEvent {
   }
 
   renderScrollbars() {
+    console.log('renderScrollbars')
     const { scrollX, scrollY } = this.getScrollOffset();
     const facet = this.sheet.facet;
 
@@ -38,7 +39,8 @@ export class ScrollEvent extends BaseEvent {
   }
 
   renderHorizontalScrollbar(panelWidth: number, realWidth: number, scrollX: number) {
-    if (Math.floor(panelWidth) > Math.floor(realWidth)) return;
+    // console.log(panelWidth, realWidth)
+    // if (Math.floor(panelWidth) > Math.floor(realWidth)) return;
 
     const panelBBox = this.sheet.facet.panelBBox;
 
@@ -133,6 +135,7 @@ export class ScrollEvent extends BaseEvent {
   }
 
   protected bindPCScroll() {
+
     const canvas = this.sheet.getCanvasElement()
     canvas?.addEventListener('wheel', this.onWheel)
   }

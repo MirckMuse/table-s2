@@ -166,7 +166,7 @@ export abstract class Facet {
     }))
   }
 
-  initScrollEvent() {
+  protected initScrollEvent() {
     this.scrollEvent = new ScrollEvent(this.sheet);
   }
 

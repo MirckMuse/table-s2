@@ -14,5 +14,15 @@ export class TextView<T = any> extends Text {
     if (appendInfo) {
       this.appendInfo = appendInfo
     }
+
+    this.init();
+  }
+
+  protected init() {
+    this.initDblClickEvent();
+  }
+
+  protected initDblClickEvent() {
+    // TODO:
   }
 }
