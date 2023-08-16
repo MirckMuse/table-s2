@@ -28,4 +28,7 @@ export const Panel_Scroll_Group_ZIndex = 1;
 export const Col_Scroll_Group_Key = 'col_scroll_group';
 export const Col_Scroll_Group_Z_Index = 4;
 
+// 图形的默认选项
+export const Line_Default_ZIndex = 100;
+
 

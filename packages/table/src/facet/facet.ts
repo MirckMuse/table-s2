@@ -1,4 +1,4 @@
-import type { Diff, Indexes, LayoutInfo, PanelIndexes, ViewCellHeights, ViewCellWidths } from "../common/interface/facet";
+import type { DataIndex, Diff, Indexes, LayoutInfo, PanelIndexes, ViewCellHeights, ViewCellWidths } from "../common/interface/facet";
 import type { Sheet } from "../sheet";
 
 import { Group, Rect } from "@antv/g";
@@ -61,7 +61,6 @@ export abstract class Facet {
   }
 
   panelScrollGroup: PanelScrollGroup;
-
   protected initPanelScrollGroup() {
     this.panelScrollGroup = new PanelScrollGroup({
       sheet: this.sheet,
@@ -130,14 +129,34 @@ export abstract class Facet {
     this.renderColumnHeader();
   }
 
-  getGridInfo(): GridInfo {
-    // TODO:
+  // 获取 grid 的列位置
+  static getGridCols(colDataIndexs: DataIndex[], colMetas: ColViewMeta[]): number[] {
+    const widthMap = colMetas.reduce<Record<string, number>>((width, meta) => {
+      width[meta.column.dataIndex] = meta.width + meta.x
+      return width
+    }, {});
+
+    return colDataIndexs.map(dataIndex => widthMap[dataIndex] ?? 0)
+  }
+
+  static getGridRows(start: number, end: number, viewCellHeights: ViewCellHeights): number[] {
+    if (end <= start || start < 0) return []
+
+    return Array(end - start + 1).fill(null).map((_, index) => {
+      return viewCellHeights.getCellOffsetY(index + start + 1)
+    })
+  }
+
+  protected getGridInfo(): GridInfo {
+    const [startRowIndex = 0, endRowIndex = 0, colIndexs = []] = this.preCellIndexes?.center ?? []
+
     return {
-      cols: [],
-      rows: []
+      cols: Facet.getGridCols(colIndexs, this.layoutInfo.colCellLeafNodes),
+      rows: Facet.getGridRows(startRowIndex, endRowIndex, this.viewCellHeights)
     }
   }
 
+  // 渲染列头
   protected renderColumnHeader() {
     if (this.columnHeader) return;
 
@@ -145,7 +164,9 @@ export abstract class Facet {
 
     this.columnHeader = new ColumnHeader(this.sheet, {
       width,
-      height: 100, // TODO: 这里的高度需要遍历 col 后才能得知
+      height: this.layoutInfo.colCellLeafNodes.reduce((max, meta) => {
+        return Math.max(max, meta.y + meta.height)
+      }, 0),
       position: { x, y: 0 },
       colCellMetas: this.layoutInfo.colCellMetas || []
     });
@@ -264,10 +285,11 @@ export abstract class Facet {
   dynamicRenderCell() {
     const { scrollX, scrollY: originalScrollY } = this.scrollEvent.getScrollOffset()
 
-    const scrollY = originalScrollY + this.getPaginationScrollY();
+    // TODO: 这块加上了表头作为偏移，有待斟酌
+    const scrollY = originalScrollY + this.getPaginationScrollY() - (this.columnHeader?.style.height ?? 0);
 
     // FIXME:
-    const totalHeight = 0;
+    const totalHeight = this.viewCellHeights.getTotalHeight();
 
     const adjustedScrollY = getAdjustedScrollOffset(scrollY, totalHeight, this.panelBBox.viewportHeight)
 

@@ -27,6 +27,8 @@ export class ColCell extends Cell<ColViewMeta> {
     // TODO: S2 generateIconConfig
   }
 
+
+
   protected update(): void {
     // throw new Error("Method not implemented.");
   }
@@ -63,10 +65,14 @@ export class ColCell extends Cell<ColViewMeta> {
       pickedTextStyle.fill = customCellStyle.color;
     }
 
-    return {
+    const style = {
       ...textStyle,
       ...pickedTextStyle
     }
+
+    // antv/g textBaseline对应 css 的 verticalAlign
+    style.textBaseline = style.verticalAlign
+    return style
   }
   protected getTextPosition(): Position {
     const { isLeaf } = this.meta;
@@ -141,7 +147,7 @@ export class ColCell extends Cell<ColViewMeta> {
   }
 
   protected getBorderPositions(): CellBorderPosition[] {
-    return [CellBorderPosition.TOP, CellBorderPosition.RIGHT]
+    return [CellBorderPosition.BOTTOM, CellBorderPosition.RIGHT]
   }
 
   private getCustomCell(): ColumnCustomHeaderResult | null {

@@ -197,4 +197,6 @@ export interface TextTheme extends TextAlignStyle {
 
   /* 字体透明度 */
   opacity?: number;
+
+  textBaseline?: VerticalAlign;
 }

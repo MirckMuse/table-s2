@@ -30,7 +30,7 @@ export class Interaction {
       .getComputedStyle(document.body)
       .getPropertyValue('overscroll-behavior') as OverscrollBehavior;
 
-    const isUserResetOverscrollBehavior = bodyOverscrollBehavior && bodyOverscrollBehavior !== 'auto'
+    const isUserResetOverscrollBehavior = bodyOverscrollBehavior && bodyOverscrollBehavior !== 'auto';
 
     if (isUserResetOverscrollBehavior) {
       this.sheet.store.set(this.overscrollBehaviorKey, bodyOverscrollBehavior)

@@ -31,8 +31,8 @@ const HorizontalCalcuateStrategy: Record<TextAlign, (options: HorizontalCalcuate
   left(options) {
     const { startX, leftIconWidth, rightIconWidth, textWidth, iconStyle } = options
 
-    const iconMarginLeft = (iconStyle.margin?.left ?? 0)
-    const iconMarginRight = (iconStyle.margin?.right ?? 0)
+    const iconMarginLeft = rightIconWidth ? (iconStyle.margin?.left ?? 0) : 0;
+    const iconMarginRight = leftIconWidth ? (iconStyle.margin?.right ?? 0) : 0;
 
     return {
       leftIconX: startX,
@@ -43,8 +43,8 @@ const HorizontalCalcuateStrategy: Record<TextAlign, (options: HorizontalCalcuate
   right(options) {
     const { startX, leftIconWidth, rightIconWidth, textWidth, iconStyle, bbox } = options;
 
-    const iconMarginLeft = (iconStyle.margin?.left ?? 0)
-    const iconMarginRight = (iconStyle.margin?.right ?? 0)
+    const iconMarginLeft = rightIconWidth ? (iconStyle.margin?.left ?? 0) : 0;
+    const iconMarginRight = leftIconWidth ? (iconStyle.margin?.right ?? 0) : 0;
 
     const textX = startX + bbox.width - rightIconWidth;
     return {
@@ -56,12 +56,12 @@ const HorizontalCalcuateStrategy: Record<TextAlign, (options: HorizontalCalcuate
   center(options) {
     const { startX, leftIconWidth, rightIconWidth, textWidth, iconStyle, bbox } = options;
 
-    const iconMarginLeft = (iconStyle.margin?.left ?? 0)
-    const iconMarginRight = (iconStyle.margin?.right ?? 0)
+    const iconMarginLeft = rightIconWidth ? (iconStyle.margin?.left ?? 0) : 0;
+    const iconMarginRight = leftIconWidth ? (iconStyle.margin?.right ?? 0) : 0;
 
     const totalWidth = iconMarginLeft + iconMarginRight + leftIconWidth + rightIconWidth + textWidth;
     const leftIconX = startX + bbox.width / 2 - totalWidth / 2;
-    const textX = leftIconX + leftIconWidth + iconMarginRight;
+    const textX = leftIconX + leftIconWidth + iconMarginRight + textWidth / 2;
     const rightIconX = textX + textWidth + iconMarginLeft;
 
     return {

@@ -1,7 +1,7 @@
-import type { SplitLine, Theme, ScrollbarTheme, BackgroundTheme, DataCellTheme, TextTheme, IconTheme, ColCellTheme, CellTheme } from "../../common/interface";
 import type { Sheet } from "table/src/sheet";
+import type { BackgroundTheme, CellTheme, ColCellTheme, DataCellTheme, IconTheme, ScrollbarTheme, SplitLine, TextTheme, Theme } from "../../common/interface";
 
-import { extend, merge } from "lodash-es";
+import { merge } from "lodash-es";
 
 export class AbstractTheme<T> {
   theme: Theme;
@@ -99,10 +99,10 @@ export class BaseDataCell extends AbstractTheme<DataCellTheme> implements DataCe
 
 export class BaseColCell extends AbstractTheme<ColCellTheme> implements ColCellTheme {
   cell: CellTheme = {
-    verticalBorderColor: '#F0F0F0',
+    verticalBorderColor: '#E6E7EC',
     verticalBorderColorOpacity: 1,
     verticalBorderWidth: 1,
-    horizontalBorderColor: '#F0F0F0',
+    horizontalBorderColor: '#E6E7EC',
     horizontalBorderColorOpacity: 1,
     horizontalBorderWidth: 1,
 

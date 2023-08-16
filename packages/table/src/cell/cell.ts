@@ -3,7 +3,8 @@ import { BackgoundColor, BaseViewMeta, CellBorderPosition, CellBoxSizing, CellIc
 import { Sheet } from "../sheet";
 import { ELLIPSIS_SYMBOL } from "../common/constant";
 import { TextView } from "../ui/TextView";
-import { renderRect, renderTextView } from "../shared";
+import { renderLine, renderRect, renderTextView } from "../shared";
+import { calcuateCellBorderStyle } from "../common/utils";
 
 export abstract class Cell<Meta extends BaseViewMeta = any> extends Group {
   // 当前单元格的元信息
@@ -201,7 +202,10 @@ export abstract class Cell<Meta extends BaseViewMeta = any> extends Group {
   }
 
   protected renderBorders() {
-    // TODO: 已经有 grid group 了，这里不一定需要再绘制边框
+    for (const position of this.getBorderPositions()) {
+      const style = calcuateCellBorderStyle(position, this.getCellBBox(), this.getStyle())
+      renderLine(this, style);
+    }
   }
 
   protected renderIconShape() {
@@ -249,7 +253,7 @@ export abstract class Cell<Meta extends BaseViewMeta = any> extends Group {
     y += verticalBorder.filter(position => position === CellBorderPosition.TOP).length * verticalBorderWidth;
     height -= verticalBorder.length * verticalBorderWidth;
     x += horizontalBorder.filter(position => position === CellBorderPosition.RIGHT).length * horizontalBorderWidth;
-    width -= horizontalBorder.length * horizontalBorderWidth;
+    width -= (horizontalBorder.length + 1) * horizontalBorderWidth;
 
     if (typeof padding === 'number') {
       padding = {

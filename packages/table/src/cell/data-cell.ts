@@ -48,6 +48,9 @@ export class DataCell extends Cell<ViewMeta> {
     this.update();
   }
 
+  protected renderBorders() {
+  }
+
   protected update(): void {
     // throw new Error("Method not implemented.");
   }
@@ -104,10 +107,14 @@ export class DataCell extends Cell<ViewMeta> {
       pickedTextStyle.fill = customCellStyle.color;
     }
 
-    return {
+    const style = {
       ...textStyle,
       ...pickedTextStyle
     }
+
+    // antv/g textBaseline对应 css 的 verticalAlign
+    style.textBaseline = style.verticalAlign
+    return style
   }
 
   // 获取文字的位置
@@ -115,6 +122,7 @@ export class DataCell extends Cell<ViewMeta> {
     const contentBBox = this.getCellBBox(CellBoxSizing.CONTENT_BOX);
     const textStyle = this.getTextStyle();
     const iconStyle = this.getIconStyle();
+
 
     const textX = calcuateTextHorizontalPosition(
       contentBBox,
@@ -125,6 +133,11 @@ export class DataCell extends Cell<ViewMeta> {
     );
 
     const textY = calcuateTextVerticalPosition(contentBBox, textStyle.verticalAlign);
+
+    if (this.meta.rowIndex === 0) {
+      console.log(contentBBox)
+      console.log(textStyle.verticalAlign, textX, this.viewTextWidth)
+    }
 
     return { x: textX, y: textY };
   }
