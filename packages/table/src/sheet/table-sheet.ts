@@ -8,9 +8,9 @@ export class TableSheet extends Sheet {
   }
 
   protected initFacet() {
-    this.facet?.destroy()
-    this.facet = this.config.facet?.(this) ?? new TableFacet(this)
-    this.facet.render()
+    this.facet?.destroy();
+    this.facet = this.config.facet?.(this) ?? new TableFacet(this);
+    this.facet.render();
   }
 
   public createDataSet(): DataSet {

@@ -1,4 +1,4 @@
-import { Group, Line, LineStyleProps, Rect, RectStyleProps, TextStyleProps } from "@antv/g";
+import { Group, Line, LineStyleProps, Rect, RectStyleProps, TextStyleProps, Text } from "@antv/g";
 import { TextView } from "../ui";
 import { Line_Default_ZIndex } from "../common/constant";
 
@@ -16,6 +16,17 @@ export function renderTextView<T = any>(group: Group, textview: TextView<T>, tex
       ...textStyle,
     }
   }, appendInfo));
+}
+
+export function renderText(group: Group, textStyle: TextStyleProps) {
+  return group.appendChild(new Text({
+    style: {
+      fontVariant: 'normal',
+      fontStyle: 'normal',
+      lineWidth: 1,
+      ...textStyle,
+    }
+  }));
 }
 
 // 渲染一个矩形

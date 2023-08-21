@@ -1,9 +1,58 @@
-import { BackgoundColor, CellBorderPosition, CellBoxSizing, CellIconPosition, CellTheme, CellType, ColumnCustomCellResult, ColumnCustomRenderOption, FormattedResult, IconTheme, Position, TextTheme, ViewMeta } from "../common/interface";
-import { calcuateIconVerticalPosition, calcuateTextHorizontalPosition, calcuateTextIconHorizontalPosition, calcuateTextVerticalPosition } from "../common/utils";
+import { InteractionType } from "../common/constant";
+import {
+  BackgoundColor,
+  CellBorderPosition,
+  CellBoxSizing,
+  CellIconPosition,
+  CellInteractiveType,
+  CellTheme,
+  CellType,
+  ColumnCustomCellResult,
+  ColumnCustomRenderOption,
+  FormattedResult,
+  IconTheme,
+  Position,
+  TextTheme,
+  ViewMeta
+} from "../common/interface";
+import {
+  calcuateIconVerticalPosition,
+  calcuateTextHorizontalPosition,
+  calcuateTextIconHorizontalPosition,
+  calcuateTextVerticalPosition,
+} from "../common/utils";
 import { Cell } from "./cell";
 import { isNil } from 'lodash-es'
 
 export class DataCell extends Cell<ViewMeta> {
+  interactionStrategy: Record<InteractionType, () => void>;
+
+  protected init(): void {
+    super.init();
+    setTimeout(() => {
+      this.interactionStrategy = {
+        [InteractionType.Hover]: this.renderHoverInteraction
+      }
+    })
+  }
+
+  protected renderHoverInteraction = () => {
+    this.renderInteractiveBackground()
+    const background = this.interactiveShapes.get(CellInteractiveType.Background);
+    if (!background || background.style.visibility === 'visible') return
+
+    background.animate(
+      [
+        { fill: this.getStyle().backgroundColor },
+        { fill: '#F6F7FA' },
+      ],
+      { duration: 200, fill: 'both' }
+    )
+  }
+
+  updateState(type: InteractionType): void {
+    this.interactionStrategy[type]?.();
+  }
 
   setMeta(meta: ViewMeta) {
     super.setMeta(meta);
@@ -40,8 +89,8 @@ export class DataCell extends Cell<ViewMeta> {
     this.resetTextAndIconShape();
     this.initIconConfig();
     this.renderBackgroundShape();
-    this.renderInteractiveBackground();
-    this.renderInterativeBorder();
+
+    // this.renderInterativeBorder();
     this.renderTextShape();
     this.renderIconShape();
     this.renderBorders();
@@ -109,7 +158,8 @@ export class DataCell extends Cell<ViewMeta> {
 
     const style = {
       ...textStyle,
-      ...pickedTextStyle
+      ...pickedTextStyle,
+      zIndex: 2
     }
 
     // antv/g textBaseline对应 css 的 verticalAlign
@@ -133,11 +183,6 @@ export class DataCell extends Cell<ViewMeta> {
     );
 
     const textY = calcuateTextVerticalPosition(contentBBox, textStyle.verticalAlign);
-
-    if (this.meta.rowIndex === 0) {
-      console.log(contentBBox)
-      console.log(textStyle.verticalAlign, textX, this.viewTextWidth)
-    }
 
     return { x: textX, y: textY };
   }
@@ -188,7 +233,7 @@ export class DataCell extends Cell<ViewMeta> {
   }
 
   protected getBorderPositions(): CellBorderPosition[] {
-    return [CellBorderPosition.BOTTOM, CellBorderPosition.RIGHT]
+    return []
   }
 
   protected getBackgroundColor(): BackgoundColor {

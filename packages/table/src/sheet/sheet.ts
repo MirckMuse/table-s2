@@ -2,14 +2,15 @@ import type { DataSet } from '../data-set';
 import type { Facet } from '../facet';
 
 import EventEmitter from '@antv/event-emitter'
-import { Config, DataConfig, MountElement } from '../common/interface';
-import { Canvas } from '@antv/g'
+import { CellTarget, Config, DataConfig, MountElement } from '../common/interface';
+import { Canvas, DisplayObject, FederatedPointerEvent } from '@antv/g'
 import { Renderer } from '@antv/g-canvas';
 import { MIN_DEVICE_PIXEL_RATIO, TableEvent, Default_Config } from '../common/constant';
 import { Interaction } from '../interaction';
 import { Store } from '../store'
 import { Adaptive, BaseTheme, HdAdapter } from '../ui';
 import { memoize, merge } from 'lodash-es'
+import { Cell } from '../cell';
 
 export type MeasureText = string | number;
 
@@ -44,6 +45,36 @@ export abstract class Sheet extends EventEmitter {
     }
   }
 
+  // 根据 target 找到 cell
+  getCell(target: CellTarget): Cell | null {
+    let parent = target
+
+    while (parent && !(parent instanceof Canvas)) {
+      if (parent instanceof Cell) {
+        return parent
+      }
+
+      parent = (parent as DisplayObject)?.parentNode
+    }
+
+    return null
+  }
+
+  // 是否属于数据面板中
+  isBelongToDataPanel(event: FederatedPointerEvent) {
+    let parent = event.target
+
+    while (parent) {
+      if (parent === this.facet.panelScrollGroup) {
+        return true
+      }
+
+      parent = (parent as DisplayObject)?.parentNode
+    }
+
+    return false
+  }
+
   store = new Store();
 
   protected dataSet: DataSet;
@@ -60,6 +91,7 @@ export abstract class Sheet extends EventEmitter {
     // 合并配置
     this.updateConfig({ width, height });
     this.canvas.resize(width, height);
+    this.render()
   }
 
   public abstract createDataSet(): DataSet;
@@ -94,7 +126,7 @@ export abstract class Sheet extends EventEmitter {
     this.initHdAdapter()
   }
 
-  protected canvas: Canvas;
+  canvas: Canvas;
   getCanvas() {
     return this.canvas
   }
@@ -201,7 +233,6 @@ export abstract class Sheet extends EventEmitter {
     }
 
     this.destroyed = true;
-
     this.store.clear()
     this.facet?.destroy();
     this.hdAdapter?.destroy();

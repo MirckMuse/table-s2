@@ -4,6 +4,7 @@ import { Position } from "./interaction";
 import { Column, RowData } from "./sheet";
 import { Cell, ColCell, DataCell } from '../../cell'
 import { ColumnHeaderMeta } from "./header";
+import { FederatedPointerEvent, IEventTarget } from "@antv/g";
 
 export interface BaseViewMeta extends SimpleBBox {
   column: Column;
@@ -30,7 +31,6 @@ export interface ColViewMeta extends BaseViewMeta {
 
   belongsCell?: Cell | null | undefined;
 }
-
 
 export interface FormattedResult {
   formattedText: string;
@@ -101,3 +101,12 @@ export interface DataCellConfig {
 
   width?: number;
 }
+
+// 单元格的 target
+export type CellTarget =
+  | FederatedPointerEvent['target']
+  | EventTarget
+  | IEventTarget
+  | null
+  | undefined
+

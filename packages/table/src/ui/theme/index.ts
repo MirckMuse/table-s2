@@ -65,7 +65,7 @@ export class BaseDataCell extends AbstractTheme<DataCellTheme> implements DataCe
   cell: CellTheme = {
     verticalBorderColor: '#F0F0F0',
     verticalBorderColorOpacity: 1,
-    verticalBorderWidth: 1,
+    verticalBorderWidth: 0,
     horizontalBorderColor: '#F0F0F0',
     horizontalBorderColorOpacity: 1,
     horizontalBorderWidth: 1,
@@ -101,7 +101,7 @@ export class BaseColCell extends AbstractTheme<ColCellTheme> implements ColCellT
   cell: CellTheme = {
     verticalBorderColor: '#E6E7EC',
     verticalBorderColorOpacity: 1,
-    verticalBorderWidth: 1,
+    verticalBorderWidth: 0,
     horizontalBorderColor: '#E6E7EC',
     horizontalBorderColorOpacity: 1,
     horizontalBorderWidth: 1,

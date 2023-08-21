@@ -1,22 +1,50 @@
-import { DefaultInteractionState, INTERACTION_STATE_KEY } from "../common/constant";
+import { DefaultInteractionState, INTERACTION_STATE_KEY, InteractionType } from "../common/constant";
 import type { InteractionState, OverscrollBehavior } from "../common/interface";
 import type { Sheet } from "../sheet";
 import { Tooltip } from "./tooltip";
+import { EventController } from './event-controller'
+import { HoverInteraction } from './hover';
+import { BaseEvent } from "../event/base";
+import { isMobile } from "../shared";
 
 export class Interaction {
   sheet: Sheet;
-
   constructor(sheet: Sheet) {
-    this.sheet = sheet
-    this.init()
+    this.sheet = sheet;
+    this.init();
   }
 
   destroy() {
-    this.restoreOverscrollBehavior()
+    this.restoreOverscrollBehavior();
   }
 
   protected init() {
-    this.initOverscrollBehavior()
+    this.initEventController();
+    this.initOverscrollBehavior();
+    this.initInteraction();
+  }
+
+  // 事件控制器
+  eventController: EventController;
+  protected initEventController() {
+    this.eventController = new EventController(this.sheet);
+  }
+
+  // 交互事件
+  interactionMap = new Map<string, BaseEvent>()
+  protected initInteraction() {
+    const defaultInteractions = this.getDefaultInteractions();
+
+    defaultInteractions
+      .filter(({ enable }) => enable !== false)
+      .forEach(({ type, interaction: InteractionMeta }) => {
+        this.interactionMap.set(type, new InteractionMeta(this.sheet))
+      })
+  }
+  protected getDefaultInteractions() {
+    return [
+      { type: InteractionType.Hover, interaction: HoverInteraction, enable: !isMobile() }
+    ]
   }
 
   // ======== 滚动条行为 ===============

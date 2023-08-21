@@ -33,3 +33,4 @@ export function isWindows() {
 }
 
 export * from './render';
+export * from './animation';

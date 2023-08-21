@@ -26,7 +26,6 @@ export class ScrollEvent extends BaseEvent {
   }
 
   renderScrollbars() {
-    console.log('renderScrollbars')
     const { scrollX, scrollY } = this.getScrollOffset();
     const facet = this.sheet.facet;
 

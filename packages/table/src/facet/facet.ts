@@ -1,11 +1,11 @@
 import type { DataIndex, Diff, Indexes, LayoutInfo, PanelIndexes, ViewCellHeights, ViewCellWidths } from "../common/interface/facet";
 import type { Sheet } from "../sheet";
 
-import { Group, Rect } from "@antv/g";
+import { FederatedPointerEvent, Group, Rect } from "@antv/g";
 import { last } from 'lodash-es';
 import { Cell, DataCell } from "../cell";
 import { Background_Group_Key, Background_Group_ZIndex, Default_Col_Cell_Height, Default_Data_Cell_Height, Foreground_Group_Key, Foreground_Group_ZIndex, Panel_Group_Key, Panel_Group_ZIndex, Panel_Scroll_Group_Key, Panel_Scroll_Group_ZIndex, TableEvent } from "../common/constant";
-import { BaseViewMeta, ColViewMeta, Column, SimpleBBox, WheelOffset } from "../common/interface";
+import { BaseViewMeta, ColViewMeta, Column, OriginEventType, SimpleBBox, WheelOffset } from "../common/interface";
 import { GridInfo } from "../group";
 import { PanelScrollGroup } from "../group/panel-scroll-group";
 import { ColumnHeader } from "../header";
@@ -69,6 +69,12 @@ export abstract class Facet {
         zIndex: Panel_Scroll_Group_ZIndex
       }
     });
+    this.panelScrollGroup.addEventListener(OriginEventType.POINTER_ENTER, (event: FederatedPointerEvent) => {
+      this.sheet.emit(TableEvent.DATA_PANEL_ENTER, event);
+    })
+    this.panelScrollGroup.addEventListener(OriginEventType.POINTER_LEAVE, (event: FederatedPointerEvent) => {
+      this.sheet.emit(TableEvent.DATA_PANEL_LEAVE, event);
+    })
     this.panelGroup.appendChild(this.panelScrollGroup);
   }
 
@@ -113,6 +119,7 @@ export abstract class Facet {
 
   unbindEvents() {
     this.scrollEvent.unbindEvents();
+    this.panelScrollGroup?.removeAllEventListeners();
   }
 
   render() {
@@ -377,15 +384,15 @@ export abstract class Facet {
   getAllCells() {
     const children = this.panelGroup.children
 
-    if (children.length) return [];
+    if (!children.length) return [];
 
     return children;
   }
 
-  getDataCells() {
+  getDataCells(): DataCell[] {
     const allCells = this.getAllCells();
 
-    return allCells.reduce<Cell<BaseViewMeta>[]>((result, cell) => {
+    return allCells.reduce<DataCell[]>((result, cell) => {
       if (cell instanceof DataCell) {
         result.push(cell)
       }

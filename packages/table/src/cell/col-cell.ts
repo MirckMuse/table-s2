@@ -1,8 +1,13 @@
+import { InteractionType } from "../common/constant";
 import { BackgoundColor, CellBorderPosition, CellBoxSizing, CellIconPosition, CellTheme, CellType, ColViewMeta, ColumnCustomHeaderResult, ColumnHeaderMeta, FormattedResult, IconTheme, Position, TextTheme } from "../common/interface";
 import { calcuateIconVerticalPosition, calcuateTextHorizontalPosition, calcuateTextIconHorizontalPosition, calcuateTextVerticalPosition } from "../common/utils";
 import { Cell } from "./cell";
 
 export class ColCell extends Cell<ColViewMeta> {
+  updateState(type: InteractionType): void {
+    
+    // throw new Error("Method not implemented.");
+  }
   protected renderCell(): void {
     this.resetTextAndIconShape();
     this.initIconConfig();

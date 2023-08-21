@@ -121,8 +121,18 @@ export class TableFacet extends Facet {
     const nodeWidthHaveWidth = colCellLeafNodes.reduce((total, node) => total + (node.width ?? 0), 0);
     const nodeWidth = Math.floor(Math.max((sheetWidth - nodeWidthHaveWidth) / nodeLengthWithoutWidth, Default_Col_Cell_Width));
 
+    let lastNoWidthNode = null;
+    let reduceWidth = 0
     for (const node of colCellLeafNodes) {
+      if (!node.width) {
+        lastNoWidthNode = node
+      }
       node.width = node.width || nodeWidth
+      reduceWidth += node.width
+    }
+
+    if (lastNoWidthNode) {
+      lastNoWidthNode.width = lastNoWidthNode.width + (sheetWidth - reduceWidth);
     }
 
     function calcuateColCellWidthAndX(nodes: ColViewMeta[], startX = 0) {

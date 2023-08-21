@@ -4,25 +4,26 @@ import './style.css'
 const App = document.querySelector<HTMLDivElement>("#app");
 
 function initTable(dom: HTMLElement) {
-  const sheet = new TableSheet(dom, {
-    columns: Array(10).fill(null).map((_, index) => {
-      return {
-        dataIndex: `a${index}`, title: `a${index}`
-      }
-    }),
-    dataSource: Array(24).fill(null).map((_, rowIndex) => {
-      return Array(10).fill(null).reduce<any>((item, _, index) => {
-        if (!index) {
-          item[`a${index}`] = rowIndex
-        } else {
-          item[`a${index}`] = index
+  const sheet = new TableSheet(dom,
+    {
+      columns: Array(10).fill(null).map((_, index) => {
+        return {
+          dataIndex: `a${index}`, title: `a${index}`
         }
-        return item
-      }, {})
-    })
-  }, {
-    adaptive: false
-  })
+      }),
+      dataSource: Array(24).fill(null).map((_, rowIndex) => {
+        return Array(10).fill(null).reduce<any>((item, _, index) => {
+          if (!index) {
+            item[`a${index}`] = rowIndex
+          } else {
+            item[`a${index}`] = `${index}`
+          }
+          return item
+        }, {})
+      })
+    },
+    { adaptive: false }
+  )
 
   sheet.render()
 }

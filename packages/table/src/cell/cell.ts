@@ -1,7 +1,7 @@
 import { DisplayObject, Group, Rect } from "@antv/g";
 import { BackgoundColor, BaseViewMeta, CellBorderPosition, CellBoxSizing, CellIconPosition, CellIcons, CellInteractiveType, CellTheme, CellType, FormattedResult, IconTheme, Padding, Position, SimpleBBox, TextTheme } from "../common/interface";
 import { Sheet } from "../sheet";
-import { ELLIPSIS_SYMBOL } from "../common/constant";
+import { ELLIPSIS_SYMBOL, InteractionType } from "../common/constant";
 import { TextView } from "../ui/TextView";
 import { renderLine, renderRect, renderTextView } from "../shared";
 import { calcuateCellBorderStyle } from "../common/utils";
@@ -197,7 +197,8 @@ export abstract class Cell<Meta extends BaseViewMeta = any> extends Group {
     this.backgroudShape = renderRect(this, {
       ...this.getCellBBox(),
       fill,
-      fillOpacity
+      fillOpacity,
+      zIndex: 0
     })
   }
 
@@ -213,9 +214,11 @@ export abstract class Cell<Meta extends BaseViewMeta = any> extends Group {
   }
 
   protected renderInteractiveBackground() {
+    if (this.interactiveShapes.has(CellInteractiveType.Background)) return;
+
     this.interactiveShapes.set(CellInteractiveType.Background, renderRect(this, {
       ...this.getCellBBox(),
-      visibility: 'hidden'
+      zIndex: 1
     }))
   }
 
@@ -289,12 +292,19 @@ export abstract class Cell<Meta extends BaseViewMeta = any> extends Group {
     this.resetIconShape();
   }
 
+  clearInteractiveState() {
+    // 将所有的动画图形删除减少内存
+    this.interactiveShapes.forEach(shape => shape.remove());
+    this.interactiveShapes.clear();
+  }
 
   /* 
   * ============= 抽象方法 ============ 
   **/
 
   // 渲染单元格
+  public abstract updateState(type: InteractionType): void;
+
   protected abstract renderCell(): void;
 
   protected abstract update(): void;

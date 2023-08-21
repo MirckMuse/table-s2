@@ -7,3 +7,8 @@ export const DefaultInteractionState: InteractionState = {
 
   force: false
 }
+
+// 内置的交互类型
+export enum InteractionType {
+  Hover = 'hover'
+}

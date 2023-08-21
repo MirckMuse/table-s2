@@ -27,6 +27,10 @@ export enum TableEvent {
   COL_CELL_EXPANDED = 'col-cell:expanded',
   COL_CELL_HIDDEN = 'col-cell:hidden',
 
+  /** ================ Data Panel ================  */
+  DATA_PANEL_ENTER = 'data-panel:enter',
+  DATA_PANEL_LEAVE = 'data-panel:leave',
+
   /** ================ Data Cell ================  */
   DATA_CELL_HOVER = 'data-cell:hover',
   DATA_CELL_CLICK = 'data-cell:click',
