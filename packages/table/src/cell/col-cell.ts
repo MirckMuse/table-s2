@@ -5,7 +5,7 @@ import { Cell } from "./cell";
 
 export class ColCell extends Cell<ColViewMeta> {
   updateState(type: InteractionType): void {
-    
+
     // throw new Error("Method not implemented.");
   }
   protected renderCell(): void {
@@ -80,32 +80,21 @@ export class ColCell extends Cell<ColViewMeta> {
     return style
   }
   protected getTextPosition(): Position {
-    const { isLeaf } = this.meta;
     const textStyle = this.getTextStyle();
     const contentBBox = this.getCellBBox(CellBoxSizing.CONTENT_BOX);
     const iconStyle = this.getIconStyle();
 
     const textY = calcuateTextVerticalPosition(contentBBox, textStyle.verticalAlign);
 
-    if (isLeaf) {
-      const textX = calcuateTextHorizontalPosition(
-        contentBBox,
-        this.viewTextWidth,
-        textStyle.textAlign,
-        iconStyle,
-        this.cellIcon
-      )
+    const textX = calcuateTextHorizontalPosition(
+      contentBBox,
+      this.viewTextWidth,
+      textStyle.textAlign,
+      iconStyle,
+      this.cellIcon
+    )
 
-      return { x: textX, y: textY }
-    }
-
-    // TODO: 分组单元格的绘制逻辑。
-    // const { width, scrollX } = this.columnHeaderMeta;
-    // 有点麻烦啊
-    return {
-      x: 0,
-      y: 0
-    }
+    return { x: textX, y: textY }
   }
 
   protected getIconStyle(): IconTheme {

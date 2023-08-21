@@ -6,11 +6,23 @@ const App = document.querySelector<HTMLDivElement>("#app");
 function initTable(dom: HTMLElement) {
   const sheet = new TableSheet(dom,
     {
-      columns: Array(10).fill(null).map((_, index) => {
-        return {
-          dataIndex: `a${index}`, title: `a${index}`
-        }
-      }),
+      columns: [
+        { dataIndex: 'a0', title: 'a0' },
+        { dataIndex: 'a1', title: 'a1' },
+        {
+          dataIndex: '', title: '分组',
+          children: [
+            { dataIndex: 'a2', title: 'a2' },
+            { dataIndex: 'a3', title: 'a3' },
+          ]
+        },
+        { dataIndex: 'a4', title: 'a4' },
+        { dataIndex: 'a5', title: 'a5' },
+        { dataIndex: 'a6', title: 'a6' },
+        { dataIndex: 'a7', title: 'a7' },
+        { dataIndex: 'a8', title: 'a8' },
+        { dataIndex: 'a9', title: 'a9' },
+      ],
       dataSource: Array(24).fill(null).map((_, rowIndex) => {
         return Array(10).fill(null).reduce<any>((item, _, index) => {
           if (!index) {

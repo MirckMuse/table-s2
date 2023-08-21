@@ -141,6 +141,7 @@ export class DataCell extends Cell<ViewMeta> {
   }
 
   protected getTextStyle(): TextTheme {
+    const ellipsis = this.meta.column.ellipsis
     const textStyle = this.sheet.theme.dataCell.text;
 
     // 兼容 css 的样式处理，将 css 的样式转换成 text theme。
@@ -156,7 +157,15 @@ export class DataCell extends Cell<ViewMeta> {
       pickedTextStyle.fill = customCellStyle.color;
     }
 
+    if (ellipsis) {
+      Object.assign(pickedTextStyle, {
+        textOverflow: 'ellipsis',
+        maxLines: 1,
+      })
+    }
+
     const style = {
+      wordWrap: true,
       ...textStyle,
       ...pickedTextStyle,
       zIndex: 2
@@ -172,7 +181,6 @@ export class DataCell extends Cell<ViewMeta> {
     const contentBBox = this.getCellBBox(CellBoxSizing.CONTENT_BOX);
     const textStyle = this.getTextStyle();
     const iconStyle = this.getIconStyle();
-
 
     const textX = calcuateTextHorizontalPosition(
       contentBBox,

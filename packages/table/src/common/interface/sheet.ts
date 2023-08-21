@@ -19,6 +19,10 @@ export type ColumnCustomRenderOption = ColumnCustomCellOption & {
   text: string | number,
 }
 
+export type ColumnEllipsis = boolean | {
+  showTitle?: boolean;
+}
+
 // 列自定义渲染函数
 export type ColumnCustomRender = (option: ColumnCustomRenderOption) => string | number;
 
@@ -69,6 +73,8 @@ export interface Column {
   minWidth?: number;
 
   maxWidth?: number;
+
+  ellipsis?: ColumnEllipsis;
 }
 
 export type ColumnFilter = (rowData: RowData, index: number, originDatas: RowData[]) => boolean;

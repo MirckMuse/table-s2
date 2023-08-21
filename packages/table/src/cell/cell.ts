@@ -164,24 +164,16 @@ export abstract class Cell<Meta extends BaseViewMeta = any> extends Group {
     // 获取文字、展示的最大宽度和样式。
     const { formattedText } = this.getFormattedResult();
 
-    const viewTextMaxWidth = this.getViewTextMaxWidth();
     const textStyle = this.getTextStyle();
 
-    const { measureTextWidth } = this.sheet;
-
     const emptyPlaceholder = this.getEmptyPlaceholder();
-
-    // 计算可视文本
-    const viewText = this.getEllipsisText(formattedText, viewTextMaxWidth, textStyle, emptyPlaceholder.toString());
-    this.viewText = viewText.toString();
-    this.viewTextWidth = measureTextWidth(this.viewText, textStyle as any as CSSStyleDeclaration);
-
 
     // 渲染文字
     const textPosition = this.getTextPosition();
 
     this.textShape = renderTextView(this, this.textShape, {
-      text: this.viewText,
+      text: formattedText || emptyPlaceholder,
+      wordWrapWidth: this.getViewTextMaxWidth(),
       ...textPosition,
       ...textStyle
     });

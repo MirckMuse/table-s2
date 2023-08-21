@@ -101,7 +101,7 @@ export class BaseColCell extends AbstractTheme<ColCellTheme> implements ColCellT
   cell: CellTheme = {
     verticalBorderColor: '#E6E7EC',
     verticalBorderColorOpacity: 1,
-    verticalBorderWidth: 0,
+    verticalBorderWidth: 1,
     horizontalBorderColor: '#E6E7EC',
     horizontalBorderColorOpacity: 1,
     horizontalBorderWidth: 1,

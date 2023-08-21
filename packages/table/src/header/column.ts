@@ -1,7 +1,7 @@
 import { Group, Rect } from "@antv/g";
 import { ColCell } from "../cell";
 import { Col_Scroll_Group_Key, Col_Scroll_Group_Z_Index } from "../common/constant";
-import { ColViewMeta, ColumnHeaderMeta, ScrollOffset } from "../common/interface";
+import { ColCellConfig, ColViewMeta, ColumnHeaderMeta, ScrollOffset } from "../common/interface";
 import { translateX } from "../utils";
 import { BaseHeader } from "./base";
 
@@ -17,14 +17,22 @@ export class ColumnHeader extends BaseHeader<ColumnHeaderMeta> {
 
     const { colCell } = this.sheet.getConfig();
 
-    colCellMetas.forEach(meta => {
-      if (!this.isCellInHeader(meta)) return;
+    colCellMetas.forEach(meta => this.recursionLayoutCell(meta, colCell?.override))
+  }
 
-      const cell = colCell?.override?.(this.sheet, meta, this.meta) ?? new ColCell(this.sheet, meta, this.meta);
-      meta.belongsCell = cell;
+  protected recursionLayoutCell(meta: ColViewMeta, colCellOverride: ColCellConfig['override']) {
+    if (!this.isCellInHeader(meta)) return;
 
-      this.scrollGroup.appendChild(cell);
-    });
+    const cell = colCellOverride
+      ? colCellOverride(this.sheet, meta, this.meta)
+      : new ColCell(this.sheet, meta, this.meta);
+
+    meta.belongsCell = cell;
+    this.scrollGroup.appendChild(cell);
+
+    if (meta.children) {
+      meta.children.forEach(item => this.recursionLayoutCell(item, colCellOverride))
+    }
   }
 
   protected offset(): void {

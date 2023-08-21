@@ -149,11 +149,31 @@ export class TableFacet extends Facet {
     }
     calcuateColCellWidthAndX(colCellMetas);
 
-    // TODO: 计算高度
+    let allMaxHeight = 0;
+    function calcuateColHeaderMaxHeight(node: ColViewMeta, maxHeight = 0) {
+      // TODO: 这里需要动态计算
+      node.height = 32;
 
-    colCellMetas.forEach(col => {
-      col.height = 32
-    })
+      allMaxHeight = Math.max(allMaxHeight, maxHeight + node.height);
+
+      if (node.parent) {
+        calcuateColHeaderMaxHeight(node.parent, maxHeight + node.height)
+      }
+    }
+    colCellLeafNodes.forEach(node => calcuateColHeaderMaxHeight(node));
+
+    function updateColNodeHeight(node: ColViewMeta, currentHeight = 0, y = 0) {
+      node.y = y;
+      if (!node.children) {
+        node.height = Math.max(node.height, currentHeight)
+        return
+      }
+
+      node.children.forEach((item) => {
+        updateColNodeHeight(item, currentHeight - node.height, y + node.height)
+      })
+    }
+    colCellMetas.forEach(col => updateColNodeHeight(col, allMaxHeight));
   }
 
   protected calcuateColCellHeight(meta: ColViewMeta): number {
