@@ -80,7 +80,10 @@ export class ColumnHeader extends BaseHeader<ColumnHeaderMeta> {
   }
 
   renderByScrollOffset(scrollOffset: ScrollOffset) {
-    if (this.meta.scrollX === scrollOffset.scrollX) return;
+    if (
+      this.meta.scrollX === scrollOffset.scrollX &&
+      this.meta.scrollY === scrollOffset.scrollY
+    ) return;
 
     this.meta.scrollX = scrollOffset.scrollX;
     this.meta.scrollY = scrollOffset.scrollY;

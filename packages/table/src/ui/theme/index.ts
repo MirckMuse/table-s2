@@ -46,11 +46,11 @@ export class BaseScrollbar extends AbstractTheme<ScrollbarTheme> implements Scro
 
   thumbMinLength = 80;
 
-  lineCap?: CanvasLineCap = 'round';
+  lineCap?: CanvasLineCap = 'square';
 
-  trackColor = 'blue';
+  trackColor = 'transparent';
 
-  thumbColor = 'red';
+  thumbColor = '#737779';
 
   hoverThumbColor = 'green';
 }

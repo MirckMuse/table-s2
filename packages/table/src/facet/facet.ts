@@ -293,12 +293,13 @@ export abstract class Facet {
     const { scrollX, scrollY: originalScrollY } = this.scrollEvent.getScrollOffset()
 
     // TODO: 这块加上了表头作为偏移，有待斟酌
-    const scrollY = originalScrollY + this.getPaginationScrollY() - (this.columnHeader?.style.height ?? 0);
+    const scrollY = originalScrollY + this.getPaginationScrollY();
 
     // FIXME:
     const totalHeight = this.viewCellHeights.getTotalHeight();
 
     const adjustedScrollY = getAdjustedScrollOffset(scrollY, totalHeight, this.panelBBox.viewportHeight)
+    console.log(adjustedScrollY)
 
     // TODO: S2 会隐藏 tooltip 和清除悬浮时间
     this.renderCell(scrollX, adjustedScrollY);
@@ -337,7 +338,15 @@ export abstract class Facet {
 
     const { add, remove } = this.diffPanelIndexes(this.preCellIndexes, indexes);
 
+    const cells = this.getDataCells();
+    remove.forEach(([rowIndex, dataIndex]) => {
+      const matchedCell = cells.find(cell => cell.name === `${rowIndex}-${dataIndex}`)
+
+      matchedCell?.remove();
+    });
+
     add.forEach(([rowIndex, dataIndex]) => {
+      // 这里可能有问题
       const meta = this.getCellMeta(rowIndex, dataIndex);
       if (!meta) return
 
@@ -345,13 +354,6 @@ export abstract class Facet {
       cell.name = `${rowIndex}-${dataIndex}`;
       this.addCell(cell);
     })
-
-    const cells = this.getDataCells();
-    remove.forEach(([rowIndex, dataIndex]) => {
-      const matchedCell = cells.find(cell => cell.name === `${rowIndex}-${dataIndex}`)
-
-      matchedCell?.remove();
-    });
 
     this.preCellIndexes = indexes;
     this.sheet.emit(TableEvent.LAYOUT_AFTER_REAL_DATA_CELL_RENDER, {

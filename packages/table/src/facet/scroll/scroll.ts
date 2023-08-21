@@ -38,8 +38,7 @@ export class ScrollEvent extends BaseEvent {
   }
 
   renderHorizontalScrollbar(panelWidth: number, realWidth: number, scrollX: number) {
-    // console.log(panelWidth, realWidth)
-    // if (Math.floor(panelWidth) > Math.floor(realWidth)) return;
+    if (Math.floor(panelWidth) >= Math.floor(realWidth)) return;
 
     const panelBBox = this.sheet.facet.panelBBox;
 
@@ -134,8 +133,69 @@ export class ScrollEvent extends BaseEvent {
   }
 
   protected bindPCScroll() {
+    this.onWheel = (event: WheelEvent) => {
+      let { deltaX, deltaY, offsetX, offsetY } = event
 
-    const canvas = this.sheet.getCanvasElement()
+      // 按住 shift 时，为水平滚动，忽略水平方向的滚动值。
+      // 只用垂直方向的偏差值计算
+      const { shiftKey } = event
+      if (shiftKey) {
+        offsetX = offsetX - deltaX + deltaY;
+        deltaX = deltaY;
+        offsetY -= deltaY;
+        deltaY = 0;
+      }
+      const { interaction } = this.sheet.getConfig()
+
+
+      const [optimizedDeltaX, optimizedDeltaY] = this.optimizeScrollXY(
+        deltaX,
+        deltaY,
+        interaction?.scrollSpeedRatio ?? 1
+      );
+
+      // S2 这里会隐藏 tooltip，并清理 hover 的 timer。
+
+      if (!this.isScrollOverViewport({
+        deltaX: optimizedDeltaX,
+        deltaY: optimizedDeltaY,
+        offsetX,
+        offsetY
+      })) {
+        if (interaction?.overscrollBehavior !== 'auto') {
+          this.stopScroll(event)
+        }
+        return
+      }
+
+      this.stopScroll(event)
+
+      // TODO: S2 这边添加了 hover 的拦截器
+
+
+      if (!this.cancelScrollFrame()) {
+        return;
+      }
+
+      // TODO: 可以考虑加锁
+      this.scrollFrameId = requestAnimationFrame(() => {
+        const { scrollX, scrollY } = this.getScrollOffset()
+
+        if (optimizedDeltaX !== 0) {
+          this.visibleHorizontalScrollbar()
+          this.updateHorizontalScrollbarOffset({ offsetX, offsetY, offset: optimizedDeltaX + scrollX })
+        }
+
+        if (optimizedDeltaY !== 0) {
+          this.visibleVerticalScrollbar()
+          this.updateVerticalScrollbarOffset(optimizedDeltaY + scrollY)
+        }
+
+        this.delayHideScrollbarOnMobile();
+        this.clearScrollFrameIdOnMobile();
+      })
+    }
+    const canvas = this.sheet.getCanvasElement();
     canvas?.addEventListener('wheel', this.onWheel)
   }
 
@@ -180,68 +240,7 @@ export class ScrollEvent extends BaseEvent {
     this.scrollFrameId = null
   }
 
-  onWheel = (event: WheelEvent) => {
-    let { deltaX, deltaY, offsetX, offsetY } = event
-
-    // 按住 shift 时，为水平滚动，忽略水平方向的滚动值。
-    // 只用垂直方向的偏差值计算
-    const { shiftKey } = event
-    if (shiftKey) {
-      offsetX = offsetX - deltaX + deltaY;
-      deltaX = deltaY;
-      offsetY -= deltaY;
-      deltaY = 0;
-    }
-    const { interaction } = this.sheet.getConfig()
-
-
-    const [optimizedDeltaX, optimizedDeltaY] = this.optimizeScrollXY(
-      deltaX,
-      deltaY,
-      interaction?.scrollSpeedRatio ?? 1
-    );
-
-    // S2 这里会隐藏 tooltip，并清理 hover 的 timer。
-
-    if (!this.isScrollOverViewport({
-      deltaX: optimizedDeltaX,
-      deltaY: optimizedDeltaY,
-      offsetX,
-      offsetY
-    })) {
-      if (interaction?.overscrollBehavior !== 'auto') {
-        this.stopScroll(event)
-      }
-      return
-    }
-
-    this.stopScroll(event)
-
-    // TODO: S2 这边添加了 hover 的拦截器
-
-
-    if (!this.cancelScrollFrame()) {
-      return;
-    }
-
-    // TODO: 可以考虑加锁
-    this.scrollFrameId = requestAnimationFrame(() => {
-      const { scrollX, scrollY } = this.getScrollOffset()
-
-      if (optimizedDeltaX !== 0) {
-        this.visibleHorizontalScrollbar()
-        this.updateHorizontalScrollbarOffset({ offsetX, offsetY, offset: optimizedDeltaX + scrollX })
-      }
-
-      if (optimizedDeltaY !== 0) {
-        this.visibleVerticalScrollbar()
-        this.updateVerticalScrollbarOffset(optimizedDeltaY + scrollY)
-      }
-
-      this.delayHideScrollbarOnMobile();
-      this.clearScrollFrameIdOnMobile();
-    })
-  }
+  onWheel: (event: WheelEvent) => void;
 
   getScrollOffset(): Required<ScrollOffset> {
     const { store } = this.sheet

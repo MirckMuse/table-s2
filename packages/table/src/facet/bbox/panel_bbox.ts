@@ -24,6 +24,8 @@ export class PanelBBox extends BaseBBox {
     this.viewportHeight = Math.abs(
       Math.floor(Math.min(this.height, this.originHeight))
     )
+
+    this.minY = this.y = this.facet.columnHeader?.style.height ?? 0;
     // TODO:
   }
 }

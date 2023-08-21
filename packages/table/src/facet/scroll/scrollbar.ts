@@ -1,5 +1,5 @@
 import type { DisplayObject, FederatedPointerEvent, LineStyleProps } from '@antv/g';
-import { Group, Line } from '@antv/g';
+import { CustomEvent, Group, Line } from '@antv/g';
 import { clamp } from 'lodash-es';
 import { OriginEventType, Position, ScrollbarTheme } from "../../common/interface";
 
@@ -44,10 +44,8 @@ export abstract class Scrollbar extends Group implements ScrollbarConfig {
   constructor(config: ScrollbarConfig) {
     super();
 
-    Object.assign(this, config)
-
-    this.thumbOffset = this.thumbLength || 0
-
+    Object.assign(this, config);
+    this.thumbOffset = this.thumbOffset || 0
     this.initScrollbar()
   }
 
@@ -61,8 +59,7 @@ export abstract class Scrollbar extends Group implements ScrollbarConfig {
         detail: { offset, updateThumbOffset }
       });
 
-      // FIXME: 这里的类型不太对，需要测试
-      this.dispatchEvent(event as any);
+      this.dispatchEvent(event)
     });
   }
 
@@ -215,6 +212,7 @@ export abstract class Scrollbar extends Group implements ScrollbarConfig {
     const isUnchanged = this.thumbOffset === validOffset && validOffset
     if (isUnchanged) return;
 
+
     this.thumbOffset = validOffset;
 
     const { from, to } = this.coordinateName;
@@ -296,11 +294,12 @@ export class HorizontalScrollbar extends Scrollbar {
   }
 
   protected createThumb(): void {
-    const style = this.thumbShape
+    const style = this.thumbStyle
 
     const { size = 0 } = this.theme
 
     const { start = 0, end = 0 } = this.getCoordinate()
+    console.log(this.getCoordinate())
 
     this.thumbShape = this.scrollbarGroup.appendChild(new Line({
       style: {
@@ -376,7 +375,7 @@ export class VerticalScrollbar extends Scrollbar {
   }
 
   protected createThumb(): void {
-    const style = this.thumbShape
+    const style = this.thumbStyle
 
     const { size = 0 } = this.theme
 

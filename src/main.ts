@@ -23,7 +23,7 @@ function initTable(dom: HTMLElement) {
         { dataIndex: 'a8', title: 'a8' },
         { dataIndex: 'a9', title: 'a9' },
       ],
-      dataSource: Array(24).fill(null).map((_, rowIndex) => {
+      dataSource: Array(100).fill(null).map((_, rowIndex) => {
         return Array(10).fill(null).reduce<any>((item, _, index) => {
           if (!index) {
             item[`a${index}`] = rowIndex
